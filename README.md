@@ -4,16 +4,16 @@ The starting point for the Neon Academy 20-day backend onboarding (Day 11). This
 
 ## What's inside
 
-| Tool | What it enforces | Why |
-| --- | --- | --- |
-| [oxlint](https://oxc.rs) | Lint rules incl. `no-explicit-any`, `prefer-const`, unused vars | Catches bugs and type-safety escapes before review does |
-| [oxfmt](https://oxc.rs) | One formatting style (single quotes, 80 cols, trailing commas) | Zero formatting debates; diffs show logic, not whitespace |
-| TypeScript `strict` | `noImplicitAny`, `noUncheckedIndexedAccess`, unused locals/params | The compiler proves things so you don't have to |
-| commitlint | [Conventional Commits](https://www.conventionalcommits.org) message format | Readable history; changelogs and release notes for free |
-| husky + lint-staged | Runs lint/format/guards on staged files at commit time | Broken code never even reaches a commit |
-| `scripts/check-untyped-promise.mjs` | No `Promise<void\|any\|unknown\|undefined>` in prod code | An untyped promise hides what an async function produces |
-| `scripts/check-unsanctioned-unknown.mjs` | Every `: unknown` must be a marked, validated boundary | `unknown` is for real input boundaries, not for silencing the checker |
-| grep guards (in `package.json`) | No `as unknown as`, no `as never`, one DTO class per file, no DB tokens in services | The cheap way out of a type error is not available |
+| Tool                                     | What it enforces                                                                    | Why                                                                   |
+| ---------------------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| [oxlint](https://oxc.rs)                 | Lint rules incl. `no-explicit-any`, `prefer-const`, unused vars                     | Catches bugs and type-safety escapes before review does               |
+| [oxfmt](https://oxc.rs)                  | One formatting style (single quotes, 80 cols, trailing commas)                      | Zero formatting debates; diffs show logic, not whitespace             |
+| TypeScript `strict`                      | `noImplicitAny`, `noUncheckedIndexedAccess`, unused locals/params                   | The compiler proves things so you don't have to                       |
+| commitlint                               | [Conventional Commits](https://www.conventionalcommits.org) message format          | Readable history; changelogs and release notes for free               |
+| husky + lint-staged                      | Runs lint/format/guards on staged files at commit time                              | Broken code never even reaches a commit                               |
+| `scripts/check-untyped-promise.mjs`      | No `Promise<void\|any\|unknown\|undefined>` in prod code                            | An untyped promise hides what an async function produces              |
+| `scripts/check-unsanctioned-unknown.mjs` | Every `: unknown` must be a marked, validated boundary                              | `unknown` is for real input boundaries, not for silencing the checker |
+| grep guards (in `package.json`)          | No `as unknown as`, no `as never`, one DTO class per file, no DB tokens in services | The cheap way out of a type error is not available                    |
 
 ## Quickstart
 
@@ -71,7 +71,3 @@ The tooling is meant to push back. Prove it works:
 2. **Add an `any`** — put `const x: any = 1;` anywhere in `src/` and run `pnpm lint:check` → oxlint fails with `no-explicit-any`. Remove it, green again.
 3. **Untyped promise** — change a return type to `Promise<void>` without a `// void-ok` comment → `lint:no-untyped-promise` fails and tells you exactly where.
 4. **DB token in a service** — write the string `DRIZZLE` inside `todo.service.ts` → `lint:no-db-in-service` fails. Storage belongs in the repository.
-
-## Next
-
-Your 20-day mission brief: **NeonTasks_EN.md** (ask your mentor).
