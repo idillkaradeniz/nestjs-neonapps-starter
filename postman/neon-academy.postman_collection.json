@@ -25,6 +25,28 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "Get Team",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/team",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "team"
+          ]
+        }
+      },
+      "response": []
     }
   ]
 }
