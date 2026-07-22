@@ -1,4 +1,4 @@
-# Day 1 Setup Notes
+# Day 2 Setup Notes
 
 ## Config Files
 
