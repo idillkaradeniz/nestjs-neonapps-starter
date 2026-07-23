@@ -1,7 +1,9 @@
 // Entry point: creates the Nest application and starts the HTTP server.
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
+import { Env } from './modules/shared/config/env.schema';
 
 // void-ok — bootstrap runs for its side effect (starting the server).
 async function bootstrap(): Promise<void> {
@@ -19,10 +21,12 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
-  // PORT comes from .env (loaded by ConfigModule); 3000 is the fallback.
-  const port = process.env.PORT ?? 3000;
+  // PORT comes from .env, already validated by Zod at startup — never
+  // read process.env directly, always go through ConfigService.
+  const configService = app.get(ConfigService<Env, true>);
+  const port = configService.get('PORT', { infer: true });
+
   await app.listen(port);
   console.log(`API listening on http://localhost:${port}`);
 }
-
 void bootstrap();
