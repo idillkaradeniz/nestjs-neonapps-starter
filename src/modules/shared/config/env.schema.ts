@@ -5,13 +5,28 @@ import { z } from 'zod';
 // TypeScript `interface` alone cannot guarantee these keys exist.
 // If a required variable is missing, parsing throws and the app must
 // not start (see main.ts / ConfigModule wiring).
-export const envSchema = z.object({
+const baseEnvSchema = z.object({
   PORT: z.coerce.number().default(3000),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
   REDIS_URL: z.string().min(1, 'REDIS_URL is required'),
   SWAGGER_USER: z.string().min(1, 'SWAGGER_USER is required'),
   SWAGGER_PASSWORD: z.string().min(1, 'SWAGGER_PASSWORD is required'),
+  // Opt-in feature-flag pattern (bonus): the flag itself is always
+  // optional, but enabling it makes its API key required — see the
+  // cross-field rule below.
+  FEATURE_X_ENABLED: z.coerce.boolean().default(false),
+  FEATURE_X_API_KEY: z.string().optional(),
+});
+
+export const envSchema = baseEnvSchema.superRefine((data, ctx) => {
+  if (data.FEATURE_X_ENABLED && !data.FEATURE_X_API_KEY) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['FEATURE_X_API_KEY'],
+      message: 'FEATURE_X_API_KEY is required when FEATURE_X_ENABLED is true',
+    });
+  }
 });
 
 // One schema, types for free — no separate `interface Env` to keep in sync.
