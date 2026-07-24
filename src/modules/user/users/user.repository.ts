@@ -1,43 +1,69 @@
-import { Injectable } from '@nestjs/common';
-import { User } from './interfaces/user.interface';
+import { Inject, Injectable } from '@nestjs/common';
+import { and, eq } from 'drizzle-orm';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { DATABASE_TOKENS } from '../../shared/database/database.tokens';
+import * as schema from '../../shared/database/schema';
+import {
+  NewUserRow,
+  UserRow,
+  users,
+} from '../../shared/database/schema/user.schema';
 
-// Repository = the ONLY layer that touches storage.
-// Today "storage" is an in-memory array. On Day 13 this will be
-// replaced by a real database, without touching the service or
-// controller (see _template/todo for the pattern this module follows).
+// Repository = the ONLY layer that touches storage. db.select()/insert()/
+// update() appear ONLY here — the no-db-in-service guard enforces this.
+// Soft delete: rows are never removed, isActive is flipped to false and
+// list queries filter on it (see findAll).
 @Injectable()
 export class UserRepository {
-  private readonly users: User[] = [];
-  private nextId = 1;
+  constructor(
+    @Inject(DATABASE_TOKENS.DRIZZLE)
+    private readonly db: NodePgDatabase<typeof schema>,
+  ) {}
 
-  findAll(): User[] {
-    return this.users;
+  async findAll(page: number, limit: number): Promise<UserRow[]> {
+    return this.db
+      .select()
+      .from(users)
+      .where(eq(users.isActive, true))
+      .limit(limit)
+      .offset((page - 1) * limit);
   }
 
-  findOne(id: number): User | undefined {
-    return this.users.find((user) => user.id === id);
-  }
-
-  create(name: string, email: string): User {
-    const user: User = { id: this.nextId++, name, email };
-    this.users.push(user);
+  async findOne(id: string): Promise<UserRow | undefined> {
+    const [user] = await this.db
+      .select()
+      .from(users)
+      .where(and(eq(users.id, id), eq(users.isActive, true)));
     return user;
   }
 
-  update(
-    id: number,
-    changes: Partial<Pick<User, 'name' | 'email'>>,
-  ): User | undefined {
-    const user = this.findOne(id);
-    if (!user) return undefined;
-    Object.assign(user, changes);
+  async create(data: Pick<NewUserRow, 'name' | 'email'>): Promise<UserRow> {
+    const [user] = await this.db.insert(users).values(data).returning();
+    if (!user) {
+      throw new Error('Insert returned no row');
+    }
     return user;
   }
 
-  remove(id: number): boolean {
-    const index = this.users.findIndex((user) => user.id === id);
-    if (index === -1) return false;
-    this.users.splice(index, 1);
-    return true;
+  async update(
+    id: string,
+    changes: Partial<Pick<UserRow, 'name' | 'email'>>,
+  ): Promise<UserRow | undefined> {
+    const [user] = await this.db
+      .update(users)
+      .set(changes)
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  // Soft delete — flips isActive instead of deleting the row.
+  async remove(id: string): Promise<boolean> {
+    const [user] = await this.db
+      .update(users)
+      .set({ isActive: false })
+      .where(eq(users.id, id))
+      .returning();
+    return Boolean(user);
   }
 }

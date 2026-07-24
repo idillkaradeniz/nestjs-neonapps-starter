@@ -1,16 +1,18 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   Param,
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
+import { UserRow } from '../../shared/database/schema/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './interfaces/user.interface';
 import { UserService } from './user.service';
 
 // Controller = HTTP shape ONLY: route, params, body DTO, response type.
@@ -20,36 +22,40 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  // GET /users
+  // GET /users?page=1&limit=10
   @Get()
-  list(): User[] {
-    return this.userService.list();
+  list(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ): Promise<UserRow[]> {
+    return this.userService.list(page, limit);
   }
 
   // GET /users/:id
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number): User {
+  findOne(@Param('id') id: string): Promise<UserRow> {
     return this.userService.findOne(id);
   }
 
   // POST /users  { "name": "...", "email": "..." }
   @Post()
-  create(@Body() dto: CreateUserDto): User {
+  create(@Body() dto: CreateUserDto): Promise<UserRow> {
     return this.userService.create(dto);
   }
 
   // PATCH /users/:id  { "name": "..." } or { "email": "..." }
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() dto: UpdateUserDto,
-  ): User {
+  ): Promise<UserRow> {
     return this.userService.update(id, dto);
   }
 
-  // DELETE /users/:id
+  // DELETE /users/:id (soft delete — flips isActive to false)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number): void {
-    this.userService.remove(id);
+  // void-ok — soft delete has no meaningful result to return.
+  remove(@Param('id') id: string): Promise<void> {
+    return this.userService.remove(id);
   }
 }
