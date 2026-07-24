@@ -11,8 +11,8 @@ import { UserRepository } from './user.repository';
 export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
-  list(page: number, limit: number): Promise<UserRow[]> {
-    return this.userRepository.findAll(page, limit);
+  async list(page: number, limit: number): Promise<UserRow[]> {
+    return await this.userRepository.findAll(page, limit);
   }
 
   async findOne(id: string): Promise<UserRow> {
@@ -23,8 +23,8 @@ export class UserService {
     return user;
   }
 
-  create(dto: CreateUserDto): Promise<UserRow> {
-    return this.userRepository.create({
+  async create(dto: CreateUserDto): Promise<UserRow> {
+    return await this.userRepository.create({
       name: dto.name.trim(),
       email: dto.email.trim(),
     });

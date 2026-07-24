@@ -24,38 +24,38 @@ export class UserController {
 
   // GET /users?page=1&limit=10
   @Get()
-  list(
+  async list(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
   ): Promise<UserRow[]> {
-    return this.userService.list(page, limit);
+    return await this.userService.list(page, limit);
   }
 
   // GET /users/:id
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<UserRow> {
-    return this.userService.findOne(id);
+  async findOne(@Param('id') id: string): Promise<UserRow> {
+    return await this.userService.findOne(id);
   }
 
   // POST /users  { "name": "...", "email": "..." }
   @Post()
-  create(@Body() dto: CreateUserDto): Promise<UserRow> {
-    return this.userService.create(dto);
+  async create(@Body() dto: CreateUserDto): Promise<UserRow> {
+    return await this.userService.create(dto);
   }
 
   // PATCH /users/:id  { "name": "..." } or { "email": "..." }
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
   ): Promise<UserRow> {
-    return this.userService.update(id, dto);
+    return await this.userService.update(id, dto);
   }
 
   // DELETE /users/:id (soft delete — flips isActive to false)
   @Delete(':id')
   // void-ok — soft delete has no meaningful result to return.
-  remove(@Param('id') id: string): Promise<void> {
-    return this.userService.remove(id);
+  async remove(@Param('id') id: string): Promise<void> {
+    return await this.userService.remove(id);
   }
 }
