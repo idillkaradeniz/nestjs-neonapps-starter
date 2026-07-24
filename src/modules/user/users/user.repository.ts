@@ -66,4 +66,19 @@ export class UserRepository {
       .returning();
     return Boolean(user);
   }
+
+  // Demonstrates db.transaction(): two inserts wrapped in one transaction.
+  // The second insert intentionally reuses the first user's email, which
+  // violates the unique constraint — both inserts roll back together.
+  // Exercised by scripts/test-transaction-rollback.mjs, not by any HTTP route.
+  async createTwoUsersInTransaction(
+    first: Pick<NewUserRow, 'name' | 'email'>,
+    second: Pick<NewUserRow, 'name' | 'email'>,
+    // void-ok — this is a proof-of-concept method with no result to return.
+  ): Promise<void> {
+    await this.db.transaction(async (tx) => {
+      await tx.insert(users).values(first).returning();
+      await tx.insert(users).values(second).returning();
+    });
+  }
 }
