@@ -11,6 +11,9 @@ export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull(),
   email: varchar('email', { length: 255 }).notNull().unique(),
+  // Never the plain-text password — only its bcrypt hash. See
+  // AuthService.register(), which is the ONLY place this gets written.
+  passwordHash: varchar('password_hash', { length: 255 }).notNull(),
   isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' })
     .notNull()
@@ -20,7 +23,3 @@ export const users = pgTable('users', {
     .defaultNow()
     .$onUpdate(() => new Date()),
 });
-
-// Row types derived from the schema — never hand-write these.
-export type UserRow = typeof users.$inferSelect;
-export type NewUserRow = typeof users.$inferInsert;

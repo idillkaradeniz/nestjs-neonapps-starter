@@ -1,16 +1,17 @@
 import {
   Body,
   Controller,
-  DefaultValuePipe,
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
-import { UserRow } from '../../shared/database/schema/user.schema';
+import { CurrentUser } from '../../shared/common/decorators/current-user.decorator';
+import { PaginationQueryDto } from '../../shared/common/dto/pagination-query.dto';
+import { AuthenticatedUser } from '../../auth/interfaces/authenticated-user.interface';
+import { PublicUserRow } from './interfaces/public-user-row.type';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
@@ -22,24 +23,20 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  // GET /users?page=1&limit=10
   @Get()
-  async list(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-  ): Promise<UserRow[]> {
-    return await this.userService.list(page, limit);
+  async list(@Query() query: PaginationQueryDto): Promise<PublicUserRow[]> {
+    return await this.userService.list(query.page, query.limit);
   }
 
   // GET /users/:id
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<UserRow> {
+  async findOne(@Param('id') id: string): Promise<PublicUserRow> {
     return await this.userService.findOne(id);
   }
 
   // POST /users  { "name": "...", "email": "..." }
   @Post()
-  async create(@Body() dto: CreateUserDto): Promise<UserRow> {
+  async create(@Body() dto: CreateUserDto): Promise<PublicUserRow> {
     return await this.userService.create(dto);
   }
 
@@ -48,14 +45,20 @@ export class UserController {
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
-  ): Promise<UserRow> {
+  ): Promise<PublicUserRow> {
     return await this.userService.update(id, dto);
   }
 
   // DELETE /users/:id (soft delete — flips isActive to false)
+  // Protected by the global JwtAuthGuard (Day 7) — @CurrentUser() is now
+  // real, so the self-deactivation check in UserService.remove() is
+  // finally reachable instead of always seeing actingUserId=undefined.
   @Delete(':id')
   // void-ok — soft delete has no meaningful result to return.
-  async remove(@Param('id') id: string): Promise<void> {
-    return await this.userService.remove(id);
+  async remove(
+    @Param('id') id: string,
+    @CurrentUser() actingUser: AuthenticatedUser,
+  ): Promise<void> {
+    return await this.userService.remove(id, actingUser.id);
   }
 }
