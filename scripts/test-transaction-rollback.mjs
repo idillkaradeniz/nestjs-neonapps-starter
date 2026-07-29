@@ -12,15 +12,17 @@ async function main() {
 
   try {
     await client.query('BEGIN');
-    await client.query('INSERT INTO users (name, email) VALUES ($1, $2)', [
-      'First User',
-      sameEmail,
-    ]);
+    // password_hash is NOT NULL (Day 7) — a fake placeholder hash is fine
+    // here, this script never authenticates as these users.
+    await client.query(
+      'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3)',
+      ['First User', sameEmail, 'not-a-real-hash'],
+    );
     // Second insert reuses the same email — violates the unique constraint.
-    await client.query('INSERT INTO users (name, email) VALUES ($1, $2)', [
-      'Second User',
-      sameEmail,
-    ]);
+    await client.query(
+      'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3)',
+      ['Second User', sameEmail, 'not-a-real-hash'],
+    );
     await client.query('COMMIT');
     console.log('✗ Unexpected: transaction committed (should have failed)');
   } catch (error) {

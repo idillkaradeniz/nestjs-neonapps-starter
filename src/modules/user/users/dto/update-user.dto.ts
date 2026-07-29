@@ -1,14 +1,7 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateUserDto } from './create-user.dto';
 
-// DTO = the declared shape of an incoming request body for updates.
-// All fields optional — a PATCH may change only some of them.
-export class UpdateUserDto {
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  name?: string;
-
-  @IsOptional()
-  @IsEmail()
-  email?: string;
-}
+// Every field from CreateUserDto, made optional — same validators
+// (@IsString, @IsEmail) still apply if a field IS provided, just not
+// required. No copy-pasted rules, no drift between create/update.
+export class UpdateUserDto extends PartialType(CreateUserDto) {}

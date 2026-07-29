@@ -3,11 +3,9 @@ import { and, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE_TOKENS } from '../../shared/database/database.tokens';
 import * as schema from '../../shared/database/schema';
-import {
-  NewUserRow,
-  UserRow,
-  users,
-} from '../../shared/database/schema/user.schema';
+import { users } from '../../shared/database/schema/user.schema';
+import { NewUserRow } from './interfaces/new-user-row.type';
+import { UserRow } from './interfaces/user-row.type';
 
 // Repository = the ONLY layer that touches storage. db.select()/insert()/
 // update() appear ONLY here — the no-db-in-service guard enforces this.
@@ -37,7 +35,17 @@ export class UserRepository {
     return user;
   }
 
-  async create(data: Pick<NewUserRow, 'name' | 'email'>): Promise<UserRow> {
+  async findByEmail(email: string): Promise<UserRow | undefined> {
+    const [user] = await this.db
+      .select()
+      .from(users)
+      .where(and(eq(users.email, email), eq(users.isActive, true)));
+    return user;
+  }
+
+  async create(
+    data: Pick<NewUserRow, 'name' | 'email' | 'passwordHash'>,
+  ): Promise<UserRow> {
     const [user] = await this.db.insert(users).values(data).returning();
     if (!user) {
       throw new Error('Insert returned no row');
@@ -71,9 +79,10 @@ export class UserRepository {
   // The second insert intentionally reuses the first user's email, which
   // violates the unique constraint — both inserts roll back together.
   // Exercised by scripts/test-transaction-rollback.mjs, not by any HTTP route.
+  // passwordHash is required here too now that the column is NOT NULL.
   async createTwoUsersInTransaction(
-    first: Pick<NewUserRow, 'name' | 'email'>,
-    second: Pick<NewUserRow, 'name' | 'email'>,
+    first: Pick<NewUserRow, 'name' | 'email' | 'passwordHash'>,
+    second: Pick<NewUserRow, 'name' | 'email' | 'passwordHash'>,
     // void-ok — this is a proof-of-concept method with no result to return.
   ): Promise<void> {
     await this.db.transaction(async (tx) => {

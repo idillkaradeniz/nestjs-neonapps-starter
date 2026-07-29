@@ -2,3 +2,4 @@
 // this file, and application code imports tables from here rather than
 // reaching into individual schema files.
 export * from './user.schema';
+export * from './refresh-token.schema';
