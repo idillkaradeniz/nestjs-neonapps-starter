@@ -9,7 +9,9 @@
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:3000" },
     { "key": "accessToken", "value": "" },
-    { "key": "refreshToken", "value": "" }
+    { "key": "refreshToken", "value": "" },
+    { "key": "adminAccessToken", "value": "" },
+    { "key": "targetUserId", "value": "" }
   ],
   "item": [
     {
@@ -167,6 +169,182 @@
       ]
     },
     {
+      "name": "Admin",
+      "description": "Day 8 — role-based authorization. Requires a real ADMIN user in the DB first: promote one manually, e.g.\nUPDATE users SET role = 'ADMIN' WHERE email = 'idil@example.com';\nThen run 'Admin Login' below — it stores its token in its OWN collection variable ({{adminAccessToken}}), kept separate from the regular {{accessToken}} used everywhere else, so you can compare admin vs. regular-user behavior side by side.",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Separate variable on purpose — this is a DIFFERENT token from",
+                  "// {{accessToken}} in the Auth folder, so an admin session and a",
+                  "// regular-user session can both be active at once for comparison.",
+                  "const body = pm.response.json();",
+                  "if (body.success) {",
+                  "  pm.collectionVariables.set('adminAccessToken', body.data.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"idil@example.com\",\n  \"password\": \"ChangeMe123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Log in as whichever user you promoted to ADMIN in the DB. If you promoted a different email, edit this body first."
+          },
+          "response": []
+        },
+        {
+          "name": "List All Users (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminAccessToken}}" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "@Roles(UserRole.ADMIN) — copy a user id from the response into the {{targetUserId}} collection variable to use the two requests below."
+          },
+          "response": []
+        },
+        {
+          "name": "Deactivate User (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminAccessToken}}" }]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{targetUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{targetUserId}}"]
+            },
+            "description": "Soft-deletes (isActive=false) the user in {{targetUserId}}. Set that variable first from 'List All Users (Admin)'. Trying this on your own id fails with USER_CANNOT_DEACTIVATE_SELF; trying it as a non-admin fails with 403 AUTH_FORBIDDEN_ROLE."
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Role (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminAccessToken}}" }]
+            },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"MODERATOR\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{targetUserId}}/role",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{targetUserId}}", "role"]
+            },
+            "description": "Changes {{targetUserId}}'s role. Trying this on your own id fails with 400 AUTH_CANNOT_CHANGE_OWN_ROLE. Trying to demote the last ADMIN fails with 400 USER_CANNOT_DEMOTE_LAST_ADMIN."
+          },
+          "response": []
+        },
+        {
+          "name": "List Users as Regular User (expect 403 AUTH_FORBIDDEN_ROLE or 403 AUTH_FORBIDDEN_PERMISSION)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Uses {{accessToken}} against the admin/permission-guarded list endpoint. With a plain USER role this comes back 403 AUTH_FORBIDDEN_ROLE (RolesGuard never even fires here anymore — actually blocked by PermissionGuard's USER_READ check, since @Roles was removed from this route in the Day 8 bonus). A MODERATOR-role token instead gets 200, since MODERATOR has USER_READ in ROLE_PERMISSIONS."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Permission Layer (Day 8 Bonus)",
+      "description": "@RequirePermission + PermissionGuard — a finer-grained layer on top of RBAC. list()/updateRole()/remove() on UserController no longer use @Roles(UserRole.ADMIN); they use @RequirePermission(...) instead, checked against ROLE_PERMISSIONS (role-permissions.constant.ts). Currently ADMIN has all four permissions, MODERATOR has USER_READ + USER_UPDATE only, USER has none. Run 'Promote To Moderator' first (via an ADMIN token) on whichever test user you want to use, then log that user in to get a MODERATOR-role token in {{accessToken}} before running the two checks below.",
+      "item": [
+        {
+          "name": "Moderator Can List Users (USER_READ — expect 200)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "{{accessToken}} must belong to a MODERATOR (or ADMIN) here — ROLE_PERMISSIONS grants both roles USER_READ, so this should return 200 even though @Roles(UserRole.ADMIN) was removed from this route."
+          },
+          "response": []
+        },
+        {
+          "name": "Moderator Cannot Manage Roles (expect 403 AUTH_FORBIDDEN_PERMISSION)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+            },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"USER\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{targetUserId}}/role",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{targetUserId}}", "role"]
+            },
+            "description": "MODERATOR has USER_READ and USER_UPDATE, but not USER_MANAGE_ROLES — PermissionGuard should block this with 403 AUTH_FORBIDDEN_PERMISSION, message naming USER_MANAGE_ROLES as the missing permission."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Get Team",
       "request": {
         "auth": {
@@ -179,27 +357,6 @@
           "raw": "{{baseUrl}}/team",
           "host": ["{{baseUrl}}"],
           "path": ["team"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get Users (paginated)",
-      "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
-        },
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/users?page=1&limit=10",
-          "host": ["{{baseUrl}}"],
-          "path": ["users"],
-          "query": [
-            { "key": "page", "value": "1" },
-            { "key": "limit", "value": "10" }
-          ]
         }
       },
       "response": []

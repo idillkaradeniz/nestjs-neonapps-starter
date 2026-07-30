@@ -10,6 +10,8 @@ import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RefreshTokenRepository } from './refresh-token.repository';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { RolesGuard } from './guards/roles.guard';
+import { PermissionGuard } from './guards/permission.guard';
 
 @Module({
   imports: [
@@ -36,10 +38,15 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     AuthService,
     JwtStrategy,
     RefreshTokenRepository,
-    // Registered here, not in AppModule — the guard's own dependencies
-    // (JwtStrategy's Passport wiring) live in this module, so this is
-    // where the global registration belongs.
     { provide: APP_GUARD, useClass: JwtAuthGuard },
+    // Registered AFTER JwtAuthGuard on purpose — Nest runs multiple
+    // APP_GUARD providers in the order they're listed here. Auth must
+    // resolve request.user BEFORE RolesGuard tries to read user.role.
+    { provide: APP_GUARD, useClass: RolesGuard },
+    // Registered AFTER RolesGuard — this is a finer-grained second check.
+    // A route can use @Roles(), @RequirePermission(), both, or neither;
+    // whichever guard has metadata for the route enforces it.
+    { provide: APP_GUARD, useClass: PermissionGuard },
   ],
 })
 export class AuthModule {}

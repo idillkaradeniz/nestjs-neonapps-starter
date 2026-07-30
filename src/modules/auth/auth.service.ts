@@ -5,7 +5,10 @@ import { JwtService } from '@nestjs/jwt';
 import Redis from 'ioredis';
 import { Env } from '../shared/config/env.schema';
 import { comparePassword } from '../shared/common/utils/password-hasher';
-import { compareTokenHash, hashToken } from '../shared/common/utils/token-hasher';
+import {
+  compareTokenHash,
+  hashToken,
+} from '../shared/common/utils/token-hasher';
 import { REDIS_TOKENS } from '../shared/redis/redis.tokens';
 import { UserRepository } from '../user/users/user.repository';
 import { UserService } from '../user/users/user.service';
@@ -17,6 +20,7 @@ import { AuthTokens } from './interfaces/auth-tokens.interface';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { RefreshTokenPayload } from './interfaces/refresh-token-payload.interface';
 import { RefreshTokenRepository } from './refresh-token.repository';
+import { UserRole } from '../user/users/user-role.enum';
 
 // Login attempts are counted per IP, in a fixed one-minute window — a
 // teaser for the real rate limiter Day 10 builds; here it's just
@@ -40,7 +44,7 @@ export class AuthService {
   // PublicUserRow-shaped result; no duplicated logic.
   async register(dto: RegisterDto): Promise<AuthTokens> {
     const user = await this.userService.create(dto);
-    return this.issueTokens(user.id, user.email);
+    return this.issueTokens(user.id, user.email, user.role);
   }
 
   async login(dto: LoginDto, ip: string): Promise<AuthTokens> {
@@ -58,7 +62,7 @@ export class AuthService {
     if (!passwordMatches) {
       throw AuthErrors.invalidCredentials();
     }
-    return this.issueTokens(user.id, user.email);
+    return this.issueTokens(user.id, user.email, user.role);
   }
 
   // Rotation: the old refresh token's DB row is deleted and a brand new
@@ -70,10 +74,9 @@ export class AuthService {
   async refresh(dto: RefreshTokenDto): Promise<AuthTokens> {
     let payload: RefreshTokenPayload;
     try {
-      payload = this.jwtService.verify<RefreshTokenPayload>(
-        dto.refreshToken,
-        { secret: this.configService.get('JWT_REFRESH_SECRET', { infer: true }) },
-      );
+      payload = this.jwtService.verify<RefreshTokenPayload>(dto.refreshToken, {
+        secret: this.configService.get('JWT_REFRESH_SECRET', { infer: true }),
+      });
     } catch {
       throw AuthErrors.refreshTokenInvalid();
     }
@@ -93,11 +96,15 @@ export class AuthService {
     await this.refreshTokenRepository.deleteById(row.id);
 
     const user = await this.userService.findOne(row.userId);
-    return this.issueTokens(user.id, user.email);
+    return this.issueTokens(user.id, user.email, user.role);
   }
 
-  private async issueTokens(userId: string, email: string): Promise<AuthTokens> {
-    const accessPayload: JwtPayload = { sub: userId, email };
+  private async issueTokens(
+    userId: string,
+    email: string,
+    role: UserRole,
+  ): Promise<AuthTokens> {
+    const accessPayload: JwtPayload = { sub: userId, email, role };
     const accessToken = this.jwtService.sign(accessPayload, {
       secret: this.configService.get('JWT_SECRET', { infer: true }),
       expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', {
