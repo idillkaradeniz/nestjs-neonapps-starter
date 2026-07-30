@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { AuthErrors } from '../../auth/auth-errors.constant';
 import { hashPassword } from '../../shared/common/utils/password-hasher';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PublicUserRow } from './interfaces/public-user-row.type';
 import { toPublicUser } from './interfaces/to-public-user';
 import { UserRow } from './interfaces/user-row.type';
-import { UserRepository } from './user.repository';
 import { UserErrors } from './user-errors.constant';
+import { UserRole } from './user-role.enum';
+import { UserRepository } from './user.repository';
+
 // Service = business logic and orchestration. It never touches storage
 // directly — it asks the repository (see _template/todo for the pattern
 // this module follows). Every method returns PublicUserRow, never the
@@ -50,6 +53,40 @@ export class UserService {
     if (dto.email !== undefined) changes.email = dto.email.trim();
 
     const updated = await this.userRepository.update(id, changes);
+    if (!updated) {
+      throw UserErrors.notFound({ id });
+    }
+    return toPublicUser(updated);
+  }
+
+  // Two business rules, enforced here (not in a guard) so no caller —
+  // HTTP, a cron job, a CLI script — can bypass them:
+  // 1. AUTH_CANNOT_CHANGE_OWN_ROLE — even an admin can't touch their own
+  //    role, so an admin can never accidentally lock themselves out.
+  // 2. USER_CANNOT_DEMOTE_LAST_ADMIN — if the target is the only active
+  //    ADMIN left, refuse the demotion, or the system has zero admins.
+  async updateRole(
+    id: string,
+    newRole: UserRole,
+    actingUserId: string,
+  ): Promise<PublicUserRow> {
+    if (id === actingUserId) {
+      throw AuthErrors.cannotChangeOwnRole();
+    }
+
+    const target = await this.userRepository.findOne(id);
+    if (!target) {
+      throw UserErrors.notFound({ id });
+    }
+
+    if (target.role === UserRole.ADMIN && newRole !== UserRole.ADMIN) {
+      const adminCount = await this.userRepository.countByRole(UserRole.ADMIN);
+      if (adminCount <= 1) {
+        throw UserErrors.cannotDemoteLastAdmin();
+      }
+    }
+
+    const updated = await this.userRepository.updateRole(id, newRole);
     if (!updated) {
       throw UserErrors.notFound({ id });
     }

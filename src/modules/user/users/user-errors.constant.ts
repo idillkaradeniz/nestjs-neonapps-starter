@@ -18,6 +18,11 @@ export const USER_ERRORS: Record<UserErrorCode, ErrorCodeDefinition> = {
     status: 400,
     message: 'You cannot deactivate your own account',
   },
+  [UserErrorCode.CANNOT_DEMOTE_LAST_ADMIN]: {
+    code: UserErrorCode.CANNOT_DEMOTE_LAST_ADMIN,
+    status: 400,
+    message: 'Cannot change role: this is the last remaining ADMIN',
+  },
 };
 
 // Ergonomic, type-checked constructors — call sites throw
@@ -32,4 +37,6 @@ export const UserErrors = {
     ),
   cannotDeactivateSelf: () =>
     new DomainException(USER_ERRORS[UserErrorCode.CANNOT_DEACTIVATE_SELF]),
+  cannotDemoteLastAdmin: () =>
+    new DomainException(USER_ERRORS[UserErrorCode.CANNOT_DEMOTE_LAST_ADMIN]),
 };

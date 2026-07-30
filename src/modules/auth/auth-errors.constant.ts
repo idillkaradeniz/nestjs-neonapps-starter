@@ -38,6 +38,22 @@ export const AUTH_ERRORS: Record<AuthErrorCode, ErrorCodeDefinition> = {
     status: 429,
     message: 'Too many login attempts — try again later',
   },
+  [AuthErrorCode.FORBIDDEN_ROLE]: {
+    code: AuthErrorCode.FORBIDDEN_ROLE,
+    status: 403,
+    message: 'This action requires one of these roles: {requiredRoles}',
+  },
+  [AuthErrorCode.CANNOT_CHANGE_OWN_ROLE]: {
+    code: AuthErrorCode.CANNOT_CHANGE_OWN_ROLE,
+    status: 400,
+    message: 'You cannot change your own role',
+  },
+  [AuthErrorCode.FORBIDDEN_PERMISSION]: {
+    code: AuthErrorCode.FORBIDDEN_PERMISSION,
+    status: 403,
+    message:
+      'This action requires one of these permissions: {requiredPermissions}',
+  },
 };
 
 // Ergonomic, type-checked constructors — call sites throw
@@ -57,4 +73,14 @@ export const AuthErrors = {
     new DomainException(AUTH_ERRORS[AuthErrorCode.REFRESH_TOKEN_EXPIRED]),
   tooManyAttempts: () =>
     new DomainException(AUTH_ERRORS[AuthErrorCode.TOO_MANY_ATTEMPTS]),
+  forbiddenPermission: (requiredPermissions: string[]) =>
+    new DomainException(AUTH_ERRORS[AuthErrorCode.FORBIDDEN_PERMISSION], {
+      requiredPermissions: requiredPermissions.join(', '),
+    }),
+  forbiddenRole: (requiredRoles: string[]) =>
+    new DomainException(AUTH_ERRORS[AuthErrorCode.FORBIDDEN_ROLE], {
+      requiredRoles: requiredRoles.join(', '),
+    }),
+  cannotChangeOwnRole: () =>
+    new DomainException(AUTH_ERRORS[AuthErrorCode.CANNOT_CHANGE_OWN_ROLE]),
 };

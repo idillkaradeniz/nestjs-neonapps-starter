@@ -1,8 +1,9 @@
+import { UserRole } from '../../user/users/user-role.enum';
+
 // What JwtStrategy.validate() puts on request.user, and what
-// @CurrentUser() hands back to a controller. Deliberately thin — id and
-// email only, nothing sensitive, since this shape is derived straight
-// from the access-token payload (see jwt-payload.interface.ts).
+// @CurrentUser() hands back to a controller.
 export interface AuthenticatedUser {
   id: string;
   email: string;
+  role: UserRole;
 }

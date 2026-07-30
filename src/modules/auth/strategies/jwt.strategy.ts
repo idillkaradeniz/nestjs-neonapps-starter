@@ -27,10 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  // boundary: validated — payload already passed jwt.verify() by the
-  // time Passport calls this; shape is guaranteed by what AuthService
-  // signs it with (see JwtPayload).
   validate(payload: JwtPayload): AuthenticatedUser {
-    return { id: payload.sub, email: payload.email };
+    return { id: payload.sub, email: payload.email, role: payload.role };
   }
 }

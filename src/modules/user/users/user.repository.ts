@@ -6,6 +6,7 @@ import * as schema from '../../shared/database/schema';
 import { users } from '../../shared/database/schema/user.schema';
 import { NewUserRow } from './interfaces/new-user-row.type';
 import { UserRow } from './interfaces/user-row.type';
+import { UserRole } from './user-role.enum';
 
 // Repository = the ONLY layer that touches storage. db.select()/insert()/
 // update() appear ONLY here — the no-db-in-service guard enforces this.
@@ -73,6 +74,26 @@ export class UserRepository {
       .where(eq(users.id, id))
       .returning();
     return Boolean(user);
+  }
+
+  // Used by UserService.updateRole() to enforce "cannot demote the last
+  // ADMIN" — counts only active users, since a deactivated admin
+  // shouldn't count as protection against demoting the real last one.
+  async countByRole(role: UserRole): Promise<number> {
+    const rows = await this.db
+      .select()
+      .from(users)
+      .where(and(eq(users.role, role), eq(users.isActive, true)));
+    return rows.length;
+  }
+
+  async updateRole(id: string, role: UserRole): Promise<UserRow | undefined> {
+    const [user] = await this.db
+      .update(users)
+      .set({ role })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
   }
 
   // Demonstrates db.transaction(): two inserts wrapped in one transaction.
