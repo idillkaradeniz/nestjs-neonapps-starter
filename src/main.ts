@@ -1,3 +1,6 @@
+// Must be the first import — Sentry needs to instrument things (http,
+// etc.) before any other module loads. See instrument.ts.
+import './instrument';
 // Entry point: creates the Nest application and starts the HTTP server.
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
@@ -7,6 +10,7 @@ import { Env } from './modules/shared/config/env.schema';
 import { HttpExceptionFilter } from './modules/shared/common/filters/http-exception.filter';
 import { ResponseTransformInterceptor } from './modules/shared/common/interceptors/response-transform.interceptor';
 import { ERROR_REGISTRY } from './modules/shared/common/errors/error-registry';
+import { Logger } from 'nestjs-pino';
 import { validationExceptionFactory } from './modules/shared/common/utils/validation-exception-factory';
 
 // void-ok — bootstrap runs for its side effect (starting the server).
@@ -19,7 +23,8 @@ async function bootstrap(): Promise<void> {
     `Error registry loaded with ${Object.keys(ERROR_REGISTRY).length} codes.`,
   );
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  app.useLogger(app.get(Logger));
 
   // Global validation: every incoming body is checked against its DTO.
   // - whitelist: silently strips properties not declared on the DTO

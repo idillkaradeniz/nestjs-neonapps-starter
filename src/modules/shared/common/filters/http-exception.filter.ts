@@ -5,6 +5,7 @@ import {
   HttpException,
   Logger,
 } from '@nestjs/common';
+import * as Sentry from '@sentry/nestjs';
 import { Request, Response } from 'express';
 import { DomainException } from '../errors/domain.exception';
 import { NormalizedError } from './normalized-error.interface';
@@ -38,6 +39,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
         timestamp: new Date().toISOString(),
         stack: exception instanceof Error ? exception.stack : undefined,
       });
+      // Only 5xx goes to Sentry — 4xx is expected user error, not
+      // something we need paged/alerted on. If SENTRY_DSN is unset,
+      // this call is a silent no-op (see instrument.ts).
+      Sentry.captureException(exception);
     }
 
     response.status(normalized.status).json({

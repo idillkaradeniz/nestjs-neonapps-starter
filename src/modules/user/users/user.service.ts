@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { AuthErrors } from '../../auth/auth-errors.constant';
 import { hashPassword } from '../../shared/common/utils/password-hasher';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -17,6 +17,8 @@ import { UserRepository } from './user.repository';
 // to-public-user.ts).
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
+
   constructor(private readonly userRepository: UserRepository) {}
 
   async list(page: number, limit: number): Promise<PublicUserRow[]> {
@@ -90,6 +92,7 @@ export class UserService {
     if (!updated) {
       throw UserErrors.notFound({ id });
     }
+    this.logger.log(`Role changed: ${id} → ${newRole} (by ${actingUserId})`);
     return toPublicUser(updated);
   }
 

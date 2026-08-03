@@ -17,4 +17,12 @@ export class HealthController {
   check(): HealthStatus {
     return { status: 'ok', uptime: process.uptime() };
   }
+  // TEMPORARY — Day 9 Sentry verification. Deliberately throws so we can
+  // confirm the 5xx → Sentry mirror in http-exception.filter.ts actually
+  // works. Remove (or keep behind a flag) once verified.
+  @Get('debug-sentry')
+  @Public()
+  triggerError(): never {
+    throw new Error('Day 9 test error — Sentry verification');
+  }
 }

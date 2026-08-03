@@ -6,6 +6,9 @@ import { z } from 'zod';
 // If a required variable is missing, parsing throws and the app must
 // not start (see main.ts / ConfigModule wiring).
 const baseEnvSchema = z.object({
+  NODE_ENV: z
+    .enum(['development', 'production', 'test'])
+    .default('development'),
   PORT: z.coerce.number().default(3000),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
@@ -20,6 +23,7 @@ const baseEnvSchema = z.object({
   // cross-field rule below.
   FEATURE_X_ENABLED: z.coerce.boolean().default(false),
   FEATURE_X_API_KEY: z.string().optional(),
+  SENTRY_DSN: z.string().optional(),
 });
 
 export const envSchema = baseEnvSchema.superRefine((data, ctx) => {

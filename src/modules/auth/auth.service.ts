@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import Redis from 'ioredis';
@@ -30,6 +30,7 @@ const LOGIN_RATE_LIMIT_MAX_ATTEMPTS = 5;
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly userService: UserService,
     private readonly userRepository: UserRepository,
@@ -44,6 +45,7 @@ export class AuthService {
   // PublicUserRow-shaped result; no duplicated logic.
   async register(dto: RegisterDto): Promise<AuthTokens> {
     const user = await this.userService.create(dto);
+    this.logger.log(`User registered: ${user.email}`);
     return this.issueTokens(user.id, user.email, user.role);
   }
 
@@ -52,7 +54,9 @@ export class AuthService {
 
     const email = dto.email.trim();
     const user = await this.userRepository.findByEmail(email);
+
     if (!user) {
+      this.logger.warn(`Failed login attempt for unknown email: ${email}`);
       throw AuthErrors.invalidCredentials();
     }
     const passwordMatches = await comparePassword(
@@ -60,6 +64,7 @@ export class AuthService {
       user.passwordHash,
     );
     if (!passwordMatches) {
+      this.logger.warn(`Failed login attempt (wrong password): ${email}`);
       throw AuthErrors.invalidCredentials();
     }
     return this.issueTokens(user.id, user.email, user.role);
@@ -150,10 +155,14 @@ export class AuthService {
   private async enforceLoginRateLimit(ip: string): Promise<void> {
     const key = `login-attempts:${ip}`;
     const attempts = await this.redis.incr(key);
+    this.logger.debug(
+      `Login attempt ${attempts}/${LOGIN_RATE_LIMIT_MAX_ATTEMPTS} for IP: ${ip}`,
+    );
     if (attempts === 1) {
       await this.redis.expire(key, LOGIN_RATE_LIMIT_WINDOW_SECONDS);
     }
     if (attempts > LOGIN_RATE_LIMIT_MAX_ATTEMPTS) {
+      this.logger.warn(`Login rate limit exceeded for IP: ${ip}`);
       throw AuthErrors.tooManyAttempts();
     }
   }

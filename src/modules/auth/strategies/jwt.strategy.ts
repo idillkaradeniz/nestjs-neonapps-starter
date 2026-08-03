@@ -5,6 +5,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Env } from '../../shared/config/env.schema';
 import { AuthenticatedUser } from '../interfaces/authenticated-user.interface';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
+import { requestContext } from '../../shared/common/context/request-context';
 
 // Passport strategy for access tokens ONLY — refresh tokens are verified
 // by hand in AuthService.refresh() (different secret, different payload
@@ -28,6 +29,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   validate(payload: JwtPayload): AuthenticatedUser {
+    const store = requestContext.getStore();
+    if (store) {
+      store.userId = payload.sub;
+    }
     return { id: payload.sub, email: payload.email, role: payload.role };
   }
 }
