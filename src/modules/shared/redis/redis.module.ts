@@ -1,3 +1,4 @@
+import { RedisService } from './redis.service';
 import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
@@ -17,7 +18,8 @@ import { REDIS_TOKENS } from './redis.tokens';
         return new Redis(configService.get('REDIS_URL', { infer: true }));
       },
     },
+    RedisService,
   ],
-  exports: [REDIS_TOKENS.CLIENT],
+  exports: [REDIS_TOKENS.CLIENT, RedisService],
 })
 export class RedisModule {}

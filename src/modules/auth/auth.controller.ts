@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Ip, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Throttle, seconds } from '@nestjs/throttler';
 import { CurrentUser } from '../shared/common/decorators/current-user.decorator';
 import { Public } from '../shared/common/decorators/public.decorator';
 import { AuthService } from './auth.service';
@@ -25,13 +26,13 @@ export class AuthController {
   }
 
   // POST /auth/login  { "email": "...", "password": "..." }
+  // Stricter than the global 100/min default (Day 10) — login is a
+  // brute-force target, gets its own tighter override.
   @Public()
   @Post('login')
-  async login(
-    @Body() dto: LoginDto,
-    @Ip() ip: string,
-  ): Promise<AuthTokens> {
-    return await this.authService.login(dto, ip);
+  @Throttle({ default: { limit: 5, ttl: seconds(60) } })
+  async login(@Body() dto: LoginDto): Promise<AuthTokens> {
+    return await this.authService.login(dto);
   }
 
   // POST /auth/refresh  { "refreshToken": "..." }

@@ -2,8 +2,12 @@ import { SentryModule } from '@sentry/nestjs/setup';
 import { LoggerModule } from 'nestjs-pino';
 import { ConfigService } from '@nestjs/config';
 import { Env } from './modules/shared/config/env.schema';
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, seconds } from '@nestjs/throttler';
+import { AppThrottlerGuard } from './modules/shared/common/guards/throttler.guard';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { TodosModule } from './modules/_template/todo/todos.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/platform/health/health.module';
@@ -12,7 +16,6 @@ import { DatabaseModule } from './modules/shared/database/database.module';
 import { RedisModule } from './modules/shared/redis/redis.module';
 import { TeamModule } from './modules/user/team/team.module';
 import { UsersModule } from './modules/user/users/users.module';
-import { MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { RequestContextMiddleware } from './modules/shared/common/context/request-context.middleware';
 import { requestContext } from './modules/shared/common/context/request-context';
 
@@ -35,6 +38,8 @@ import { requestContext } from './modules/shared/common/context/request-context'
         return {
           pinoHttp: {
             level: isDev ? 'debug' : 'info',
+            // AsyncLocalStorage-backed request context (Day 9 bonus) —
+            // attaches requestId/userId to every log line automatically.
             customProps: () => requestContext.getStore() ?? {},
             transport: isDev
               ? {
@@ -45,6 +50,18 @@ import { requestContext } from './modules/shared/common/context/request-context'
           },
         };
       },
+    }),
+    // Redis-backed rate limiting (Day 10). One global 100/min throttler;
+    // routes can override with @Throttle({ default: {...} }) for stricter
+    // limits (see AuthController.login).
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService<Env, true>) => ({
+        throttlers: [{ name: 'default', ttl: seconds(60), limit: 100 }],
+        storage: new ThrottlerStorageRedisService(
+          configService.get('REDIS_URL', { infer: true }),
+        ),
+      }),
     }),
     DatabaseModule,
     RedisModule,
@@ -57,8 +74,18 @@ import { requestContext } from './modules/shared/common/context/request-context'
     // default from this point on; see @Public() for the opt-out.
     AuthModule,
   ],
+  providers: [
+    // Registers ThrottlerGuard globally — every route is rate-limited by
+    // default, same fail-closed pattern as JwtAuthGuard.
+    {
+      provide: APP_GUARD,
+      useClass: AppThrottlerGuard,
+    },
+  ],
 })
 export class AppModule implements NestModule {
+  // Applies RequestContextMiddleware (Day 9) to every route, before
+  // guards run — see request-context.middleware.ts.
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(RequestContextMiddleware).forRoutes('*');
   }

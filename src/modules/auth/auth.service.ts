@@ -1,15 +1,13 @@
 import { randomUUID } from 'node:crypto';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import Redis from 'ioredis';
 import { Env } from '../shared/config/env.schema';
 import { comparePassword } from '../shared/common/utils/password-hasher';
 import {
   compareTokenHash,
   hashToken,
 } from '../shared/common/utils/token-hasher';
-import { REDIS_TOKENS } from '../shared/redis/redis.tokens';
 import { UserRepository } from '../user/users/user.repository';
 import { UserService } from '../user/users/user.service';
 import { AuthErrors } from './auth-errors.constant';
@@ -22,12 +20,6 @@ import { RefreshTokenPayload } from './interfaces/refresh-token-payload.interfac
 import { RefreshTokenRepository } from './refresh-token.repository';
 import { UserRole } from '../user/users/user-role.enum';
 
-// Login attempts are counted per IP, in a fixed one-minute window — a
-// teaser for the real rate limiter Day 10 builds; here it's just
-// Redis INCR + EXPIRE.
-const LOGIN_RATE_LIMIT_WINDOW_SECONDS = 60;
-const LOGIN_RATE_LIMIT_MAX_ATTEMPTS = 5;
-
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -37,7 +29,6 @@ export class AuthService {
     private readonly refreshTokenRepository: RefreshTokenRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService<Env, true>,
-    @Inject(REDIS_TOKENS.CLIENT) private readonly redis: Redis,
   ) {}
 
   // Reuses UserService.create() — register is "create a user, then log
@@ -49,9 +40,10 @@ export class AuthService {
     return this.issueTokens(user.id, user.email, user.role);
   }
 
-  async login(dto: LoginDto, ip: string): Promise<AuthTokens> {
-    await this.enforceLoginRateLimit(ip);
-
+  // Day 7's ad-hoc Redis rate limiter retired here (Day 10) — login is
+  // now protected by the global @nestjs/throttler config, overridden to
+  // a stricter limit via @Throttle() on the controller route.
+  async login(dto: LoginDto): Promise<AuthTokens> {
     const email = dto.email.trim();
     const user = await this.userRepository.findByEmail(email);
 
@@ -126,8 +118,6 @@ export class AuthService {
       }),
     });
 
-    // Decode (not verify — we just signed it, no need to re-check) to
-    // pull the real `exp` claim rather than hand-parsing "7d" ourselves.
     const decoded = this.jwtService.decode<{ exp: number } | null>(
       refreshToken,
     );
@@ -136,10 +126,6 @@ export class AuthService {
     }
     const expiresAt = new Date(decoded.exp * 1000);
 
-    // Only a hash of the refresh token is stored — same "never store the
-    // raw secret" rule as passwords, just with a fast hash instead of
-    // bcrypt (see token-hasher.ts for why). A stolen refresh_tokens row
-    // is useless without the raw token to hash-compare against.
     const tokenHash = hashToken(refreshToken);
     await this.refreshTokenRepository.create({
       id: jti,
@@ -149,21 +135,5 @@ export class AuthService {
     });
 
     return { accessToken, refreshToken };
-  }
-
-  // void-ok — this either returns silently or throws; no result to return.
-  private async enforceLoginRateLimit(ip: string): Promise<void> {
-    const key = `login-attempts:${ip}`;
-    const attempts = await this.redis.incr(key);
-    this.logger.debug(
-      `Login attempt ${attempts}/${LOGIN_RATE_LIMIT_MAX_ATTEMPTS} for IP: ${ip}`,
-    );
-    if (attempts === 1) {
-      await this.redis.expire(key, LOGIN_RATE_LIMIT_WINDOW_SECONDS);
-    }
-    if (attempts > LOGIN_RATE_LIMIT_MAX_ATTEMPTS) {
-      this.logger.warn(`Login rate limit exceeded for IP: ${ip}`);
-      throw AuthErrors.tooManyAttempts();
-    }
   }
 }

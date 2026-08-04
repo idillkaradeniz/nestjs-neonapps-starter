@@ -36,6 +36,7 @@
     "lint:no-db-in-service": "! grep -rnaE 'DATABASE_TOKENS|DRIZZLE' src --include='*.service.ts' --exclude='*.spec.ts' 2>/dev/null || (echo '✗ Forbidden: DB token in a *.service.ts. DB access belongs in a repository (SoC).' && exit 1)"
   },
   "dependencies": {
+    "@nest-lab/throttler-storage-redis": "^1.2.0",
     "@nestjs/common": "^11.1.17",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.1.17",
@@ -43,6 +44,7 @@
     "@nestjs/mapped-types": "^2.1.1",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.17",
+    "@nestjs/throttler": "^6.5.0",
     "@sentry/nestjs": "^10.69.0",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
