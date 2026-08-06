@@ -1,26 +1,37 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiSuccessResponse } from '../../shared/common/decorators/api-success-response.decorator';
+import { ApiErrorCodes } from '../../shared/common/decorators/api-error-codes.decorator';
+import { AuthErrorCode } from '../../auth/auth-error-code.enum';
 import { CreateTodoDto } from './dto/create-todo.dto';
+import { TodoResponseDto } from './dto/todo-response.dto';
 import { Todo } from './interfaces/todo.interface';
 import { TodoService } from './todo.service';
 
-// Controller = HTTP shape ONLY: route, params, body DTO, response type.
-// There is deliberately NO logic here — no if/else, no loops, no storage.
-// It translates HTTP into a service call and returns the result. If you
-// find yourself writing business rules in a controller, move them to the
-// service. Validation already happened (global ValidationPipe + the DTO)
-// by the time create() runs.
+// Not @Public() — sits behind the global JwtAuthGuard.
+@ApiBearerAuth()
 @Controller('todos')
 export class TodoController {
   constructor(private readonly todoService: TodoService) {}
 
-  // GET /todos
   @Get()
+  @ApiSuccessResponse(TodoResponseDto, { isArray: true })
+  @ApiErrorCodes(
+    AuthErrorCode.TOKEN_MISSING,
+    AuthErrorCode.TOKEN_EXPIRED,
+    AuthErrorCode.TOKEN_INVALID,
+  )
   list(): Todo[] {
     return this.todoService.list();
   }
 
-  // POST /todos  { "title": "learn nest" }
   @Post()
+  @ApiSuccessResponse(TodoResponseDto, { status: 201 })
+  @ApiErrorCodes(
+    AuthErrorCode.TOKEN_MISSING,
+    AuthErrorCode.TOKEN_EXPIRED,
+    AuthErrorCode.TOKEN_INVALID,
+  )
   create(@Body() dto: CreateTodoDto): Todo {
     return this.todoService.create(dto);
   }

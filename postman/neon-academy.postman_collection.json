@@ -1,29 +1,50 @@
 {
   "info": {
     "_postman_id": "6f6ebfd7-eb1e-496b-ad2d-504d092e0d2f",
-    "name": "Neon Academy —",
-    "description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+    "name": "Neon Academy \u2014",
+    "description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n\u2022 Group related requests\n\u2022 Test your API in real-world scenarios\n\u2022 Document and share your requests\n\nUpdate the name and overview whenever you\u2019re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "56820477"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:3000" },
-    { "key": "accessToken", "value": "" },
-    { "key": "refreshToken", "value": "" },
-    { "key": "adminAccessToken", "value": "" },
-    { "key": "targetUserId", "value": "" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "adminAccessToken",
+      "value": ""
+    },
+    {
+      "key": "targetUserId",
+      "value": ""
+    }
   ],
   "item": [
     {
       "name": "Get Health",
       "request": {
-        "auth": { "type": "noauth" },
+        "auth": {
+          "type": "noauth"
+        },
         "method": "GET",
         "header": [],
         "url": {
           "raw": "{{baseUrl}}/health",
-          "host": ["{{baseUrl}}"],
-          "path": ["health"]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
         }
       },
       "response": []
@@ -39,7 +60,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// Day 7: 'learn collection variables' — stash the tokens from the",
+                  "// Day 7: 'learn collection variables' \u2014 stash the tokens from the",
                   "// response so every later request in this collection can reuse",
                   "// them via {{accessToken}} / {{refreshToken}} instead of copy-paste.",
                   "const body = pm.response.json();",
@@ -52,17 +73,30 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Idil\",\n  \"email\": \"idil@example.com\",\n  \"password\": \"ChangeMe123!\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "register"]
+              "raw": "{{baseUrl}}/v1/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "register"
+              ]
             }
           },
           "response": []
@@ -85,17 +119,30 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"idil@example.com\",\n  \"password\": \"ChangeMe123!\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "login"]
+              "raw": "{{baseUrl}}/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "login"
+              ]
             }
           },
           "response": []
@@ -109,7 +156,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "// Rotation: every refresh issues a brand new pair and invalidates",
-                  "// the old refresh token — overwrite both collection variables.",
+                  "// the old refresh token \u2014 overwrite both collection variables.",
                   "const body = pm.response.json();",
                   "if (body.success) {",
                   "  pm.collectionVariables.set('accessToken', body.data.accessToken);",
@@ -120,17 +167,30 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/auth/refresh",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "refresh"]
+              "raw": "{{baseUrl}}/v1/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "refresh"
+              ]
             }
           },
           "response": []
@@ -140,28 +200,47 @@
           "request": {
             "auth": {
               "type": "bearer",
-              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}"
+                }
+              ]
             },
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/auth/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "me"]
+              "raw": "{{baseUrl}}/v1/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "me"
+              ]
             }
           },
           "response": []
         },
         {
-          "name": "Get Me (no token — expect 401 AUTH_TOKEN_MISSING)",
+          "name": "Get Me (no token \u2014 expect 401 AUTH_TOKEN_MISSING)",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/auth/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "me"]
+              "raw": "{{baseUrl}}/v1/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "me"
+              ]
             }
           },
           "response": []
@@ -170,7 +249,7 @@
     },
     {
       "name": "Admin",
-      "description": "Day 8 — role-based authorization. Requires a real ADMIN user in the DB first: promote one manually, e.g.\nUPDATE users SET role = 'ADMIN' WHERE email = 'idil@example.com';\nThen run 'Admin Login' below — it stores its token in its OWN collection variable ({{adminAccessToken}}), kept separate from the regular {{accessToken}} used everywhere else, so you can compare admin vs. regular-user behavior side by side.",
+      "description": "Day 8 \u2014 role-based authorization. Requires a real ADMIN user in the DB first: promote one manually, e.g.\nUPDATE users SET role = 'ADMIN' WHERE email = 'idil@example.com';\nThen run 'Admin Login' below \u2014 it stores its token in its OWN collection variable ({{adminAccessToken}}), kept separate from the regular {{accessToken}} used everywhere else, so you can compare admin vs. regular-user behavior side by side.",
       "item": [
         {
           "name": "Admin Login",
@@ -180,7 +259,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// Separate variable on purpose — this is a DIFFERENT token from",
+                  "// Separate variable on purpose \u2014 this is a DIFFERENT token from",
                   "// {{accessToken}} in the Auth folder, so an admin session and a",
                   "// regular-user session can both be active at once for comparison.",
                   "const body = pm.response.json();",
@@ -192,17 +271,30 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"idil@example.com\",\n  \"password\": \"ChangeMe123!\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "login"]
+              "raw": "{{baseUrl}}/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "auth",
+                "login"
+              ]
             },
             "description": "Log in as whichever user you promoted to ADMIN in the DB. If you promoted a different email, edit this body first."
           },
@@ -213,20 +305,36 @@
           "request": {
             "auth": {
               "type": "bearer",
-              "bearer": [{ "key": "token", "value": "{{adminAccessToken}}" }]
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}"
+                }
+              ]
             },
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/users?page=1&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["users"],
+              "raw": "{{baseUrl}}/v1/users?page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "users"
+              ],
               "query": [
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" }
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
               ]
             },
-            "description": "@Roles(UserRole.ADMIN) — copy a user id from the response into the {{targetUserId}} collection variable to use the two requests below."
+            "description": "@Roles(UserRole.ADMIN) \u2014 copy a user id from the response into the {{targetUserId}} collection variable to use the two requests below."
           },
           "response": []
         },
@@ -235,14 +343,25 @@
           "request": {
             "auth": {
               "type": "bearer",
-              "bearer": [{ "key": "token", "value": "{{adminAccessToken}}" }]
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}"
+                }
+              ]
             },
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/users/{{targetUserId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["users", "{{targetUserId}}"]
+              "raw": "{{baseUrl}}/v1/users/{{targetUserId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "users",
+                "{{targetUserId}}"
+              ]
             },
             "description": "Soft-deletes (isActive=false) the user in {{targetUserId}}. Set that variable first from 'List All Users (Admin)'. Trying this on your own id fails with USER_CANNOT_DEACTIVATE_SELF; trying it as a non-admin fails with 403 AUTH_FORBIDDEN_ROLE."
           },
@@ -253,18 +372,35 @@
           "request": {
             "auth": {
               "type": "bearer",
-              "bearer": [{ "key": "token", "value": "{{adminAccessToken}}" }]
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}"
+                }
+              ]
             },
             "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"role\": \"MODERATOR\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/users/{{targetUserId}}/role",
-              "host": ["{{baseUrl}}"],
-              "path": ["users", "{{targetUserId}}", "role"]
+              "raw": "{{baseUrl}}/v1/users/{{targetUserId}}/role",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "users",
+                "{{targetUserId}}",
+                "role"
+              ]
             },
             "description": "Changes {{targetUserId}}'s role. Trying this on your own id fails with 400 AUTH_CANNOT_CHANGE_OWN_ROLE. Trying to demote the last ADMIN fails with 400 USER_CANNOT_DEMOTE_LAST_ADMIN."
           },
@@ -275,20 +411,36 @@
           "request": {
             "auth": {
               "type": "bearer",
-              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}"
+                }
+              ]
             },
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/users?page=1&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["users"],
+              "raw": "{{baseUrl}}/v1/users?page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "users"
+              ],
               "query": [
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" }
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
               ]
             },
-            "description": "Uses {{accessToken}} against the admin/permission-guarded list endpoint. With a plain USER role this comes back 403 AUTH_FORBIDDEN_ROLE (RolesGuard never even fires here anymore — actually blocked by PermissionGuard's USER_READ check, since @Roles was removed from this route in the Day 8 bonus). A MODERATOR-role token instead gets 200, since MODERATOR has USER_READ in ROLE_PERMISSIONS."
+            "description": "Uses {{accessToken}} against the admin/permission-guarded list endpoint. With a plain USER role this comes back 403 AUTH_FORBIDDEN_ROLE (RolesGuard never even fires here anymore \u2014 actually blocked by PermissionGuard's USER_READ check, since @Roles was removed from this route in the Day 8 bonus). A MODERATOR-role token instead gets 200, since MODERATOR has USER_READ in ROLE_PERMISSIONS."
           },
           "response": []
         }
@@ -296,27 +448,43 @@
     },
     {
       "name": "Permission Layer (Day 8 Bonus)",
-      "description": "@RequirePermission + PermissionGuard — a finer-grained layer on top of RBAC. list()/updateRole()/remove() on UserController no longer use @Roles(UserRole.ADMIN); they use @RequirePermission(...) instead, checked against ROLE_PERMISSIONS (role-permissions.constant.ts). Currently ADMIN has all four permissions, MODERATOR has USER_READ + USER_UPDATE only, USER has none. Run 'Promote To Moderator' first (via an ADMIN token) on whichever test user you want to use, then log that user in to get a MODERATOR-role token in {{accessToken}} before running the two checks below.",
+      "description": "@RequirePermission + PermissionGuard \u2014 a finer-grained layer on top of RBAC. list()/updateRole()/remove() on UserController no longer use @Roles(UserRole.ADMIN); they use @RequirePermission(...) instead, checked against ROLE_PERMISSIONS (role-permissions.constant.ts). Currently ADMIN has all four permissions, MODERATOR has USER_READ + USER_UPDATE only, USER has none. Run 'Promote To Moderator' first (via an ADMIN token) on whichever test user you want to use, then log that user in to get a MODERATOR-role token in {{accessToken}} before running the two checks below.",
       "item": [
         {
-          "name": "Moderator Can List Users (USER_READ — expect 200)",
+          "name": "Moderator Can List Users (USER_READ \u2014 expect 200)",
           "request": {
             "auth": {
               "type": "bearer",
-              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}"
+                }
+              ]
             },
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/users?page=1&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["users"],
+              "raw": "{{baseUrl}}/v1/users?page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "users"
+              ],
               "query": [
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" }
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
               ]
             },
-            "description": "{{accessToken}} must belong to a MODERATOR (or ADMIN) here — ROLE_PERMISSIONS grants both roles USER_READ, so this should return 200 even though @Roles(UserRole.ADMIN) was removed from this route."
+            "description": "{{accessToken}} must belong to a MODERATOR (or ADMIN) here \u2014 ROLE_PERMISSIONS grants both roles USER_READ, so this should return 200 even though @Roles(UserRole.ADMIN) was removed from this route."
           },
           "response": []
         },
@@ -325,20 +493,211 @@
           "request": {
             "auth": {
               "type": "bearer",
-              "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}"
+                }
+              ]
             },
             "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"role\": \"USER\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/users/{{targetUserId}}/role",
-              "host": ["{{baseUrl}}"],
-              "path": ["users", "{{targetUserId}}", "role"]
+              "raw": "{{baseUrl}}/v1/users/{{targetUserId}}/role",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "users",
+                "{{targetUserId}}",
+                "role"
+              ]
             },
-            "description": "MODERATOR has USER_READ and USER_UPDATE, but not USER_MANAGE_ROLES — PermissionGuard should block this with 403 AUTH_FORBIDDEN_PERMISSION, message naming USER_MANAGE_ROLES as the missing permission."
+            "description": "MODERATOR has USER_READ and USER_UPDATE, but not USER_MANAGE_ROLES \u2014 PermissionGuard should block this with 403 AUTH_FORBIDDEN_PERMISSION, message naming USER_MANAGE_ROLES as the missing permission."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Person\",\n  \"email\": \"new.person@example.com\",\n  \"password\": \"ChangeMe123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User By Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/users/{{targetUserId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "users",
+                "{{targetUserId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/users/{{targetUserId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "users",
+                "{{targetUserId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Todos",
+      "item": [
+        {
+          "name": "List Todos",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/todos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "todos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Todo",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"learn nest\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/todos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "todos"
+              ]
+            }
           },
           "response": []
         }
@@ -349,14 +708,24 @@
       "request": {
         "auth": {
           "type": "bearer",
-          "bearer": [{ "key": "token", "value": "{{accessToken}}" }]
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}"
+            }
+          ]
         },
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/team",
-          "host": ["{{baseUrl}}"],
-          "path": ["team"]
+          "raw": "{{baseUrl}}/v1/team",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "team"
+          ]
         }
       },
       "response": []

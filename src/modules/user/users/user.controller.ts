@@ -18,10 +18,19 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UserService } from './user.service';
+import { ApiSuccessResponse } from '../../shared/common/decorators/api-success-response.decorator';
+import { ApiErrorCodes } from '../../shared/common/decorators/api-error-codes.decorator';
+import { PublicUserResponseDto } from './dto/public-user-response.dto';
+import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { AuthErrorCode } from '../../auth/auth-error-code.enum';
+import { UserErrorCode } from './user-error-code.enum';
 
 // Controller = HTTP shape ONLY: route, params, body DTO, response type.
 // No logic here — it translates HTTP into a service call
 // (see _template/todo for the pattern this module follows).
+// No route here is @Public() — every one sits behind the global
+// JwtAuthGuard, hence @ApiBearerAuth() at the class level.
+@ApiBearerAuth()
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -31,24 +40,49 @@ export class UserController {
   // MODERATOR, not plain USER.
   @RequirePermission(Permission.USER_READ)
   @Get()
+  @ApiSuccessResponse(PublicUserResponseDto, { isArray: true })
+  @ApiErrorCodes(
+    AuthErrorCode.TOKEN_MISSING,
+    AuthErrorCode.TOKEN_EXPIRED,
+    AuthErrorCode.TOKEN_INVALID,
+    AuthErrorCode.FORBIDDEN_PERMISSION,
+  )
   async list(@Query() query: PaginationQueryDto): Promise<PublicUserRow[]> {
     return await this.userService.list(query.page, query.limit);
   }
 
-  // GET /users/:id
   @Get(':id')
+  @ApiSuccessResponse(PublicUserResponseDto)
+  @ApiErrorCodes(
+    AuthErrorCode.TOKEN_MISSING,
+    AuthErrorCode.TOKEN_EXPIRED,
+    AuthErrorCode.TOKEN_INVALID,
+    UserErrorCode.NOT_FOUND,
+  )
   async findOne(@Param('id') id: string): Promise<PublicUserRow> {
     return await this.userService.findOne(id);
   }
 
-  // POST /users  { "name": "...", "email": "..." }
   @Post()
+  @ApiSuccessResponse(PublicUserResponseDto, { status: 201 })
+  @ApiErrorCodes(
+    AuthErrorCode.TOKEN_MISSING,
+    AuthErrorCode.TOKEN_EXPIRED,
+    AuthErrorCode.TOKEN_INVALID,
+    UserErrorCode.EMAIL_ALREADY_EXISTS,
+  )
   async create(@Body() dto: CreateUserDto): Promise<PublicUserRow> {
     return await this.userService.create(dto);
   }
 
-  // PATCH /users/:id  { "name": "..." } or { "email": "..." }
   @Patch(':id')
+  @ApiSuccessResponse(PublicUserResponseDto)
+  @ApiErrorCodes(
+    AuthErrorCode.TOKEN_MISSING,
+    AuthErrorCode.TOKEN_EXPIRED,
+    AuthErrorCode.TOKEN_INVALID,
+    UserErrorCode.NOT_FOUND,
+  )
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
@@ -56,12 +90,18 @@ export class UserController {
     return await this.userService.update(id, dto);
   }
 
-  // PATCH /users/:id/role  { "role": "ADMIN" | "USER" | "MODERATOR" }
-  // Only roles with USER_MANAGE_ROLES (currently just ADMIN) can reach
-  // this. Business rules (can't change your own role, can't demote the
-  // last ADMIN) are enforced in UserService.updateRole(), not here.
   @RequirePermission(Permission.USER_MANAGE_ROLES)
   @Patch(':id/role')
+  @ApiSuccessResponse(PublicUserResponseDto)
+  @ApiErrorCodes(
+    AuthErrorCode.TOKEN_MISSING,
+    AuthErrorCode.TOKEN_EXPIRED,
+    AuthErrorCode.TOKEN_INVALID,
+    AuthErrorCode.FORBIDDEN_PERMISSION,
+    AuthErrorCode.CANNOT_CHANGE_OWN_ROLE,
+    UserErrorCode.NOT_FOUND,
+    UserErrorCode.CANNOT_DEMOTE_LAST_ADMIN,
+  )
   async updateRole(
     @Param('id') id: string,
     @Body() dto: UpdateUserRoleDto,
@@ -70,10 +110,17 @@ export class UserController {
     return await this.userService.updateRole(id, dto.role, actingUser.id);
   }
 
-  // DELETE /users/:id (soft delete — flips isActive to false)
-  // Only roles with USER_DELETE (currently just ADMIN) can reach this.
   @RequirePermission(Permission.USER_DELETE)
   @Delete(':id')
+  @ApiResponse({ status: 200, description: 'User soft-deleted' })
+  @ApiErrorCodes(
+    AuthErrorCode.TOKEN_MISSING,
+    AuthErrorCode.TOKEN_EXPIRED,
+    AuthErrorCode.TOKEN_INVALID,
+    AuthErrorCode.FORBIDDEN_PERMISSION,
+    UserErrorCode.CANNOT_DEACTIVATE_SELF,
+    UserErrorCode.NOT_FOUND,
+  )
   async remove(
     @Param('id') id: string,
     @CurrentUser() actingUser: AuthenticatedUser,

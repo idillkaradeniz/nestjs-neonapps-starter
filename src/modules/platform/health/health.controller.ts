@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, VERSION_NEUTRAL } from '@nestjs/common';
 import { Public } from '../../shared/common/decorators/public.decorator';
 import { RawResponse } from '../../shared/common/decorators/raw-response.decorator';
 import { HealthStatus } from './interfaces/health-status.interface';
@@ -9,8 +9,9 @@ import { HealthStatus } from './interfaces/health-status.interface';
 // since infra tooling expects this exact contract, not our API's shape.
 // @Public() is required too — JwtAuthGuard is global (Day 7), so
 // without it this would demand a token just to check liveness.
-@Controller('health')
-export class HealthController {
+export
+@Controller({ path: 'health', version: VERSION_NEUTRAL })
+class HealthController {
   @Get()
   @Public()
   @RawResponse()

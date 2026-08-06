@@ -1,16 +1,25 @@
 import { Controller, Get } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiSuccessResponse } from '../../shared/common/decorators/api-success-response.decorator';
+import { ApiErrorCodes } from '../../shared/common/decorators/api-error-codes.decorator';
+import { AuthErrorCode } from '../../auth/auth-error-code.enum';
+import { ColleagueResponseDto } from './dto/colleague-response.dto';
 import { Colleague } from './interfaces/colleague.interface';
 import { TeamService } from './team.service';
 
-// Controller = HTTP shape ONLY: route and response type.
-// No logic here — it translates HTTP into a service call
-// (see _template/todo for the pattern this module follows).
+// Not @Public() — sits behind the global JwtAuthGuard.
+@ApiBearerAuth()
 @Controller('team')
 export class TeamController {
   constructor(private readonly teamService: TeamService) {}
 
-  // GET /team
   @Get()
+  @ApiSuccessResponse(ColleagueResponseDto, { isArray: true })
+  @ApiErrorCodes(
+    AuthErrorCode.TOKEN_MISSING,
+    AuthErrorCode.TOKEN_EXPIRED,
+    AuthErrorCode.TOKEN_INVALID,
+  )
   list(): Colleague[] {
     return this.teamService.list();
   }
