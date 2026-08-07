@@ -11,6 +11,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.USER_UPDATE,
     Permission.USER_DELETE,
     Permission.USER_MANAGE_ROLES,
+    Permission.AUDIT_READ,
   ],
   [UserRole.MODERATOR]: [Permission.USER_READ, Permission.USER_UPDATE],
   [UserRole.USER]: [],

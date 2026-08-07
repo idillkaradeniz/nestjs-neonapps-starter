@@ -3,6 +3,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 export interface RequestContextStore {
   requestId?: string;
   userId?: string;
+  auditBefore?: Record<string, unknown> | null;
 }
 
 // Single, app-wide AsyncLocalStorage instance. The middleware "runs" it

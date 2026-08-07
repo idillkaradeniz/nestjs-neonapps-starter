@@ -43,4 +43,28 @@ export class RedisService {
   async ping(): Promise<string> {
     return this.client.ping();
   }
+
+  // Used by cache invalidation: when an entity changes, we can't know
+  // every hashed list-cache key that might contain it (page=1, page=2,
+  // different filters...), so instead of tracking them all, we just wipe
+  // every "entity:list:*" key in one sweep. SCAN (not KEYS) because KEYS
+  // blocks the whole Redis instance on a large keyspace — SCAN walks it
+  // in small non-blocking chunks instead.
+  async deleteByPattern(pattern: string): Promise<void> {
+    // void-ok
+    const stream = this.client.scanStream({ match: pattern, count: 100 });
+    const pipeline = this.client.pipeline();
+    let found = false;
+    for await (const keys of stream as AsyncIterable<string[]>) {
+      if (keys.length > 0) {
+        found = true;
+        for (const key of keys) {
+          pipeline.del(key);
+        }
+      }
+    }
+    if (found) {
+      await pipeline.exec();
+    }
+  }
 }

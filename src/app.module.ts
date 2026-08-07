@@ -1,3 +1,5 @@
+import { SchedulerModule } from './modules/platform/scheduler/scheduler.module';
+import { AuditModule } from './modules/platform/audit/audit.module';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { LoggerModule } from 'nestjs-pino';
 import { ConfigService } from '@nestjs/config';
@@ -14,10 +16,13 @@ import { HealthModule } from './modules/platform/health/health.module';
 import { validateEnv } from './modules/shared/config/env.schema';
 import { DatabaseModule } from './modules/shared/database/database.module';
 import { RedisModule } from './modules/shared/redis/redis.module';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TeamModule } from './modules/user/team/team.module';
 import { UsersModule } from './modules/user/users/users.module';
 import { RequestContextMiddleware } from './modules/shared/common/context/request-context.middleware';
 import { requestContext } from './modules/shared/common/context/request-context';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { NotificationsModule } from './modules/platform/notifications/notifications.module';
 
 // Root module: only wires other modules together — no logic of its own.
 @Module({
@@ -65,7 +70,12 @@ import { requestContext } from './modules/shared/common/context/request-context'
     }),
     DatabaseModule,
     RedisModule,
+    ScheduleModule.forRoot(),
     HealthModule,
+    SchedulerModule,
+    AuditModule,
+    NotificationsModule,
+    EventEmitterModule.forRoot(),
     TodosModule,
     TeamModule,
     UsersModule,

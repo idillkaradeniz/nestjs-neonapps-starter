@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, lt } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE_TOKENS } from '../../shared/database/database.tokens';
 import * as schema from '../../shared/database/schema';
@@ -56,7 +56,7 @@ export class UserRepository {
 
   async update(
     id: string,
-    changes: Partial<Pick<UserRow, 'name' | 'email'>>,
+    changes: Partial<Pick<UserRow, 'name' | 'email' | 'passwordHash'>>,
   ): Promise<UserRow | undefined> {
     const [user] = await this.db
       .update(users)
@@ -110,5 +110,18 @@ export class UserRepository {
       await tx.insert(users).values(first).returning();
       await tx.insert(users).values(second).returning();
     });
+  }
+
+  // Day 12 cleanup cron: permanently removes rows that have been
+  // soft-deleted (isActive: false) for more than `days` days. Hard
+  // delete — no undo — which is why it only targets rows already
+  // soft-deleted a long time ago, not active users.
+  async deleteInactiveOlderThan(days: number): Promise<number> {
+    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const deleted = await this.db
+      .delete(users)
+      .where(and(eq(users.isActive, false), lt(users.updatedAt, cutoff)))
+      .returning();
+    return deleted.length;
   }
 }

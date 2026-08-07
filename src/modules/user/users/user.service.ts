@@ -1,3 +1,4 @@
+import { requestContext } from '../../shared/common/context/request-context';
 import { Injectable, Logger } from '@nestjs/common';
 import { AuthErrors } from '../../auth/auth-errors.constant';
 import { hashPassword } from '../../shared/common/utils/password-hasher';
@@ -9,6 +10,9 @@ import { UserRow } from './interfaces/user-row.type';
 import { UserErrors } from './user-errors.constant';
 import { UserRole } from './user-role.enum';
 import { UserRepository } from './user.repository';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventNames } from '../../shared/common/events/event-names.constant';
+import { UserCreatedEvent } from './events/user-created.event';
 
 // Service = business logic and orchestration. It never touches storage
 // directly — it asks the repository (see _template/todo for the pattern
@@ -19,8 +23,10 @@ import { UserRepository } from './user.repository';
 export class UserService {
   private readonly logger = new Logger(UserService.name);
 
-  constructor(private readonly userRepository: UserRepository) {}
-
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
   async list(page: number, limit: number): Promise<PublicUserRow[]> {
     const users = await this.userRepository.findAll(page, limit);
     return users.map(toPublicUser);
@@ -46,13 +52,30 @@ export class UserService {
       email,
       passwordHash,
     });
+
+    this.eventEmitter.emit(EventNames.USER_CREATED, {
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+    } satisfies UserCreatedEvent);
+
     return toPublicUser(user);
   }
 
   async update(id: string, dto: UpdateUserDto): Promise<PublicUserRow> {
-    const changes: Partial<Pick<UserRow, 'name' | 'email'>> = {};
+    const changes: Partial<Pick<UserRow, 'name' | 'email' | 'passwordHash'>> =
+      {};
     if (dto.name !== undefined) changes.name = dto.name.trim();
     if (dto.email !== undefined) changes.email = dto.email.trim();
+    if (dto.password !== undefined)
+      changes.passwordHash = await hashPassword(dto.password);
+
+    const before = await this.userRepository.findOne(id);
+    if (!before) {
+      throw UserErrors.notFound({ id });
+    }
+    const store = requestContext.getStore();
+    if (store) store.auditBefore = toPublicUser(before);
 
     const updated = await this.userRepository.update(id, changes);
     if (!updated) {
@@ -102,12 +125,27 @@ export class UserService {
   // (HTTP, a cron job, a CLI script) can bypass it.
   // void-ok — soft delete has no meaningful result to return.
   async remove(id: string, actingUserId?: string): Promise<void> {
+    // void-ok — soft delete has no meaningful result to return.
     if (actingUserId !== undefined && actingUserId === id) {
       throw UserErrors.cannotDeactivateSelf();
     }
+    const before = await this.userRepository.findOne(id);
+    if (!before) {
+      throw UserErrors.notFound({ id });
+    }
+    const store = requestContext.getStore();
+    if (store) store.auditBefore = toPublicUser(before);
+
     const removed = await this.userRepository.remove(id);
     if (!removed) {
       throw UserErrors.notFound({ id });
     }
+  }
+
+  // Day 12 cleanup cron: hard-deletes users soft-deleted more than `days`
+  // days ago. Returns the count purely so the cron job can log a
+  // meaningful line ("cleaned up N records") — no HTTP caller needs this.
+  async purgeInactiveOlderThan(days: number): Promise<number> {
+    return await this.userRepository.deleteInactiveOlderThan(days);
   }
 }

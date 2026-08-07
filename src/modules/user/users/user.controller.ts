@@ -8,6 +8,8 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { Audit } from '../../platform/audit/audit.decorator';
+import { AuditAction } from '../../platform/audit/audit-action.enum';
 import { CurrentUser } from '../../shared/common/decorators/current-user.decorator';
 import { RequirePermission } from '../../shared/common/decorators/require-permission.decorator';
 import { PaginationQueryDto } from '../../shared/common/dto/pagination-query.dto';
@@ -24,6 +26,12 @@ import { PublicUserResponseDto } from './dto/public-user-response.dto';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { AuthErrorCode } from '../../auth/auth-error-code.enum';
 import { UserErrorCode } from './user-error-code.enum';
+import { Cacheable } from '../../shared/common/cache/cacheable.decorator';
+import { CacheEvict } from '../../shared/common/cache/cache-evict.decorator';
+import {
+  buildEntityKey,
+  buildListKey,
+} from '../../shared/common/cache/cache-key.util';
 
 // Controller = HTTP shape ONLY: route, params, body DTO, response type.
 // No logic here — it translates HTTP into a service call
@@ -47,6 +55,10 @@ export class UserController {
     AuthErrorCode.TOKEN_INVALID,
     AuthErrorCode.FORBIDDEN_PERMISSION,
   )
+  @Cacheable({
+    ttl: 60,
+    keyFn: (req) => buildListKey('user', req.query as Record<string, unknown>),
+  })
   async list(@Query() query: PaginationQueryDto): Promise<PublicUserRow[]> {
     return await this.userService.list(query.page, query.limit);
   }
@@ -59,6 +71,10 @@ export class UserController {
     AuthErrorCode.TOKEN_INVALID,
     UserErrorCode.NOT_FOUND,
   )
+  @Cacheable({
+    ttl: 60,
+    keyFn: (req) => buildEntityKey('user', req.params.id as string),
+  })
   async findOne(@Param('id') id: string): Promise<PublicUserRow> {
     return await this.userService.findOne(id);
   }
@@ -71,6 +87,11 @@ export class UserController {
     AuthErrorCode.TOKEN_INVALID,
     UserErrorCode.EMAIL_ALREADY_EXISTS,
   )
+  @Audit({ entity: 'user', action: AuditAction.CREATE })
+  @CacheEvict({
+    keyFn: (_req, data) => buildEntityKey('user', (data as PublicUserRow).id),
+    listPrefix: 'user:list',
+  })
   async create(@Body() dto: CreateUserDto): Promise<PublicUserRow> {
     return await this.userService.create(dto);
   }
@@ -83,6 +104,11 @@ export class UserController {
     AuthErrorCode.TOKEN_INVALID,
     UserErrorCode.NOT_FOUND,
   )
+  @Audit({ entity: 'user', action: AuditAction.UPDATE })
+  @CacheEvict({
+    keyFn: (req) => buildEntityKey('user', req.params.id as string),
+    listPrefix: 'user:list',
+  })
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
@@ -90,6 +116,9 @@ export class UserController {
     return await this.userService.update(id, dto);
   }
 
+  // Two business rules, enforced in the Service (not here) so no caller
+  // — HTTP, a cron job, a CLI script — can bypass them: can't change
+  // your own role, can't demote the last ADMIN.
   @RequirePermission(Permission.USER_MANAGE_ROLES)
   @Patch(':id/role')
   @ApiSuccessResponse(PublicUserResponseDto)
@@ -102,6 +131,11 @@ export class UserController {
     UserErrorCode.NOT_FOUND,
     UserErrorCode.CANNOT_DEMOTE_LAST_ADMIN,
   )
+  @Audit({ entity: 'user', action: AuditAction.UPDATE })
+  @CacheEvict({
+    keyFn: (req) => buildEntityKey('user', req.params.id as string),
+    listPrefix: 'user:list',
+  })
   async updateRole(
     @Param('id') id: string,
     @Body() dto: UpdateUserRoleDto,
@@ -110,6 +144,7 @@ export class UserController {
     return await this.userService.updateRole(id, dto.role, actingUser.id);
   }
 
+  // DELETE /users/:id (soft delete — flips isActive to false)
   @RequirePermission(Permission.USER_DELETE)
   @Delete(':id')
   @ApiResponse({ status: 200, description: 'User soft-deleted' })
@@ -121,6 +156,11 @@ export class UserController {
     UserErrorCode.CANNOT_DEACTIVATE_SELF,
     UserErrorCode.NOT_FOUND,
   )
+  @Audit({ entity: 'user', action: AuditAction.DELETE })
+  @CacheEvict({
+    keyFn: (req) => buildEntityKey('user', req.params.id as string),
+    listPrefix: 'user:list',
+  })
   async remove(
     @Param('id') id: string,
     @CurrentUser() actingUser: AuthenticatedUser,

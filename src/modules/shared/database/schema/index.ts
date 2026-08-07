@@ -4,3 +4,4 @@
 export * from './user.schema';
 export * from './refresh-token.schema';
 export * from './user-role.pg-enum';
+export * from './audit-log.schema';

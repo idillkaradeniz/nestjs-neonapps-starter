@@ -1,3 +1,5 @@
+import { AuditInterceptor } from './modules/platform/audit/audit.interceptor';
+import { AuditService } from './modules/platform/audit/audit.service';
 // Must be the first import — Sentry needs to instrument things (http,
 // etc.) before any other module loads. See instrument.ts.
 import './instrument';
@@ -8,6 +10,8 @@ import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { Env } from './modules/shared/config/env.schema';
 import { HttpExceptionFilter } from './modules/shared/common/filters/http-exception.filter';
+import { CacheInterceptor } from './modules/shared/common/cache/cache.interceptor';
+import { RedisService } from './modules/shared/redis/redis.service';
 import { ResponseTransformInterceptor } from './modules/shared/common/interceptors/response-transform.interceptor';
 import { ERROR_REGISTRY } from './modules/shared/common/errors/error-registry';
 import { Logger } from 'nestjs-pino';
@@ -59,12 +63,10 @@ async function bootstrap(): Promise<void> {
   // shape by this filter (see http-exception.filter.ts).
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  // Every successful response gets wrapped in { success: true, data },
-  // mirroring the filter above (see response-transform.interceptor.ts).
-  // app.get(Reflector) reuses Nest's own Reflector instance instead of
-  // constructing a new one by hand.
   app.useGlobalInterceptors(
     new ResponseTransformInterceptor(app.get(Reflector)),
+    new CacheInterceptor(app.get(RedisService), app.get(Reflector)),
+    new AuditInterceptor(app.get(AuditService), app.get(Reflector)),
   );
 
   // PORT comes from .env, already validated by Zod at startup — never
