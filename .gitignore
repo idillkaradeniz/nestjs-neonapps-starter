@@ -53,3 +53,7 @@ pids
 *.pid
 *.seed
 *.pid.lock
+
+# Local file uploads
+/uploads/*
+!/uploads/.gitkeep

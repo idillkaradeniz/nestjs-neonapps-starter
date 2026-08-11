@@ -23,6 +23,8 @@ import { RequestContextMiddleware } from './modules/shared/common/context/reques
 import { requestContext } from './modules/shared/common/context/request-context';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { NotificationsModule } from './modules/platform/notifications/notifications.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
+import { BullModule } from '@nestjs/bullmq';
 
 // Root module: only wires other modules together — no logic of its own.
 @Module({
@@ -68,12 +70,22 @@ import { NotificationsModule } from './modules/platform/notifications/notificati
         ),
       }),
     }),
+
+    BullModule.forRootAsync({
+  inject: [ConfigService],
+  useFactory: (configService: ConfigService<Env, true>) => ({
+    connection: {
+      url: configService.get('REDIS_URL', { infer: true }),
+    },
+  }),
+}),
     DatabaseModule,
     RedisModule,
     ScheduleModule.forRoot(),
     HealthModule,
     SchedulerModule,
     AuditModule,
+    UploadsModule,
     NotificationsModule,
     EventEmitterModule.forRoot(),
     TodosModule,
