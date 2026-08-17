@@ -1,8 +1,21 @@
-# Local development services only (DB + Redis).
-# Neither is wired into the app yet: Postgres gets connected on Day 13
-# (Drizzle ORM), Redis on Day 19 (caching). Env defaults match .env.example.
-
 services:
+  app:
+    build:
+      context: .
+      target: production
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/app
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   db:
     image: postgres:16-alpine
     ports:
