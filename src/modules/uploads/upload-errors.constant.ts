@@ -1,6 +1,6 @@
 import { DomainException } from '../shared/common/errors/domain.exception';
 import { ErrorCodeDefinition } from '../shared/common/errors/error-code-definition.interface';
-import { UploadErrorCode } from './upload-error-code.enum';
+import { UploadErrorCode } from '../shared/common/enums';
 
 export const UPLOAD_ERRORS: Record<UploadErrorCode, ErrorCodeDefinition> = {
   [UploadErrorCode.FILE_TOO_LARGE]: {

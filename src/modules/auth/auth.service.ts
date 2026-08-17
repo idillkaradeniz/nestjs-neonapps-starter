@@ -18,7 +18,7 @@ import { AuthTokens } from './interfaces/auth-tokens.interface';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { RefreshTokenPayload } from './interfaces/refresh-token-payload.interface';
 import { RefreshTokenRepository } from './refresh-token.repository';
-import { UserRole } from '../user/users/user-role.enum';
+import { UserRole } from  '../shared/common/enums';
 
 @Injectable()
 export class AuthService {
@@ -31,18 +31,12 @@ export class AuthService {
     private readonly configService: ConfigService<Env, true>,
   ) {}
 
-  // Reuses UserService.create() — register is "create a user, then log
-  // them in." Same hashing, same email-uniqueness check, same
-  // PublicUserRow-shaped result; no duplicated logic.
   async register(dto: RegisterDto): Promise<AuthTokens> {
     const user = await this.userService.create(dto);
     this.logger.log(`User registered: ${user.email}`);
     return this.issueTokens(user.id, user.email, user.role);
   }
 
-  // Day 7's ad-hoc Redis rate limiter retired here (Day 10) — login is
-  // now protected by the global @nestjs/throttler config, overridden to
-  // a stricter limit via @Throttle() on the controller route.
   async login(dto: LoginDto): Promise<AuthTokens> {
     const email = dto.email.trim();
     const user = await this.userRepository.findByEmail(email);
@@ -62,12 +56,6 @@ export class AuthService {
     return this.issueTokens(user.id, user.email, user.role);
   }
 
-  // Rotation: the old refresh token's DB row is deleted and a brand new
-  // access+refresh pair is issued. A refresh token can only ever be used
-  // once — reusing an already-rotated one fails the findById lookup and
-  // is treated as invalid (a real system would also want to treat reuse
-  // as a signal of a stolen token and revoke the whole family; out of
-  // scope for today's teaser).
   async refresh(dto: RefreshTokenDto): Promise<AuthTokens> {
     let payload: RefreshTokenPayload;
     try {

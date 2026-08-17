@@ -1,7 +1,6 @@
-// Barrel file — re-exports every table schema. drizzle-kit points at
-// this file, and application code imports tables from here rather than
-// reaching into individual schema files.
 export * from './user.schema';
 export * from './refresh-token.schema';
-export * from './user-role.pg-enum';
+export * from '../enums';
 export * from './audit-log.schema';
+export * from './ticket.schema';
+export * from './ticket-comment.schema';

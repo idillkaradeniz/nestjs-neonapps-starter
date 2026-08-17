@@ -2,7 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { ApiSuccessResponse } from '../../shared/common/decorators/api-success-response.decorator';
 import { ApiErrorCodes } from '../../shared/common/decorators/api-error-codes.decorator';
-import { AuthErrorCode } from '../../auth/auth-error-code.enum';
+import { AuthErrorCode } from '../../shared/common/enums';
 import { ColleagueResponseDto } from './dto/colleague-response.dto';
 import { Colleague } from './interfaces/colleague.interface';
 import { TeamService } from './team.service';

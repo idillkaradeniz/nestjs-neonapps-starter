@@ -6,12 +6,8 @@ import * as schema from '../../shared/database/schema';
 import { users } from '../../shared/database/schema/user.schema';
 import { NewUserRow } from './interfaces/new-user-row.type';
 import { UserRow } from './interfaces/user-row.type';
-import { UserRole } from './user-role.enum';
+import { UserRole } from '../../shared/common/enums';
 
-// Repository = the ONLY layer that touches storage. db.select()/insert()/
-// update() appear ONLY here — the no-db-in-service guard enforces this.
-// Soft delete: rows are never removed, isActive is flipped to false and
-// list queries filter on it (see findAll).
 @Injectable()
 export class UserRepository {
   constructor(

@@ -1,5 +1,5 @@
 import { IsEnum } from 'class-validator';
-import { UserRole } from '../user-role.enum';
+import { UserRole } from '../../../shared/common/enums';
 
 // PATCH /users/:id/role body — the only field an admin can set through
 // this endpoint. Business rules (can't change your own role, can't

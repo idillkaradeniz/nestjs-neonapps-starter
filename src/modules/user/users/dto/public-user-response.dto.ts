@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserRole } from '../user-role.enum';
+import { UserRole } from '../../../shared/common/enums'
 
 // Swagger-only mirror of PublicUserRow.
 export class PublicUserResponseDto {

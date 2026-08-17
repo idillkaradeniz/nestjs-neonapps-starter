@@ -1,4 +1,4 @@
-import { UserRole } from '../../user/users/user-role.enum';
+import { UserRole } from '../../shared/common/enums';
 
 // What JwtStrategy.validate() puts on request.user, and what
 // @CurrentUser() hands back to a controller.

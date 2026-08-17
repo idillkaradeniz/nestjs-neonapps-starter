@@ -8,11 +8,12 @@ import { PublicUserRow } from './interfaces/public-user-row.type';
 import { toPublicUser } from './interfaces/to-public-user';
 import { UserRow } from './interfaces/user-row.type';
 import { UserErrors } from './user-errors.constant';
-import { UserRole } from './user-role.enum';
+import { UserRole } from '../../shared/common/enums';
 import { UserRepository } from './user.repository';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EventNames } from '../../shared/common/events/event-names.constant';
 import { UserCreatedEvent } from './events/user-created.event';
+import { DocumentsGateway } from '../../documents/documents.gateway';
 
 // Service = business logic and orchestration. It never touches storage
 // directly — it asks the repository (see _template/todo for the pattern
@@ -26,6 +27,7 @@ export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly eventEmitter: EventEmitter2,
+    private readonly documentsGateway: DocumentsGateway,
   ) {}
   async list(page: number, limit: number): Promise<PublicUserRow[]> {
     const users = await this.userRepository.findAll(page, limit);
@@ -81,7 +83,9 @@ export class UserService {
     if (!updated) {
       throw UserErrors.notFound({ id });
     }
-    return toPublicUser(updated);
+    const publicUser = toPublicUser(updated);
+    this.documentsGateway.broadcastUpdate(id, publicUser);
+    return publicUser;
   }
 
   // Two business rules, enforced here (not in a guard) so no caller —

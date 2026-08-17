@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { ApiSuccessResponse } from '../../shared/common/decorators/api-success-response.decorator';
 import { ApiErrorCodes } from '../../shared/common/decorators/api-error-codes.decorator';
-import { AuthErrorCode } from '../../auth/auth-error-code.enum';
+import { AuthErrorCode } from '../../shared/common/enums';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { TodoResponseDto } from './dto/todo-response.dto';
 import { Todo } from './interfaces/todo.interface';

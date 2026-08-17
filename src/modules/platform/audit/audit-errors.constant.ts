@@ -1,6 +1,6 @@
 import { DomainException } from '../../shared/common/errors/domain.exception';
 import { ErrorCodeDefinition } from '../../shared/common/errors/error-code-definition.interface';
-import { AuditErrorCode } from './audit-error-code.enum';
+import { AuditErrorCode } from '../../shared/common/enums';
 
 export const AUDIT_ERRORS: Record<AuditErrorCode, ErrorCodeDefinition> = {
   [AuditErrorCode.IMMUTABLE]: {

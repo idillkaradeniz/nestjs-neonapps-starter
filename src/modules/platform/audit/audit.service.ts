@@ -1,6 +1,6 @@
 //fire-and-forget
 import { Injectable, Logger } from '@nestjs/common';
-import { AuditAction } from './audit-action.enum';
+import { AuditAction } from '../../shared/common/enums';
 import { AuditRepository } from './audit.repository';
 import { AuditQueryFilter } from './interfaces/audit-query-filter.interface';
 import { AuditRow } from './interfaces/audit-row.type';

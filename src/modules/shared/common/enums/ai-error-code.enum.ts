@@ -1,0 +1,3 @@
+export enum AiErrorCode {
+  PROVIDER_UNAVAILABLE = 'AI_PROVIDER_UNAVAILABLE',
+}

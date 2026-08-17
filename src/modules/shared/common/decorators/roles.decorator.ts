@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import { UserRole } from '../../../user/users/user-role.enum';
+import { UserRole } from '../enums';
 
 // Marks a route handler as requiring one of the given roles. Read by
 // RolesGuard via Reflector — same SetMetadata pattern as @Public().

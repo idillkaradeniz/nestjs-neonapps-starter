@@ -1,6 +1,6 @@
 import { Controller, Delete, Get, Param, Patch, Query } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { Permission } from '../../auth/permission.enum';
+import { Permission } from '../../shared/common/enums';
 import { RequirePermission } from '../../shared/common/decorators/require-permission.decorator';
 import { AuditQueryDto } from './dto/audit-query.dto';
 import { AuditRow } from './interfaces/audit-row.type';

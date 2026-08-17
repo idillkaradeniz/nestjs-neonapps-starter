@@ -9,12 +9,16 @@ import {
   Query,
 } from '@nestjs/common';
 import { Audit } from '../../platform/audit/audit.decorator';
-import { AuditAction } from '../../platform/audit/audit-action.enum';
 import { CurrentUser } from '../../shared/common/decorators/current-user.decorator';
 import { RequirePermission } from '../../shared/common/decorators/require-permission.decorator';
 import { PaginationQueryDto } from '../../shared/common/dto/pagination-query.dto';
 import { AuthenticatedUser } from '../../auth/interfaces/authenticated-user.interface';
-import { Permission } from '../../auth/permission.enum';
+import {
+  AuditAction,
+  Permission,
+  AuthErrorCode,
+  UserErrorCode,
+} from '../../shared/common/enums';
 import { PublicUserRow } from './interfaces/public-user-row.type';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -24,8 +28,6 @@ import { ApiSuccessResponse } from '../../shared/common/decorators/api-success-r
 import { ApiErrorCodes } from '../../shared/common/decorators/api-error-codes.decorator';
 import { PublicUserResponseDto } from './dto/public-user-response.dto';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
-import { AuthErrorCode } from '../../auth/auth-error-code.enum';
-import { UserErrorCode } from './user-error-code.enum';
 import { Cacheable } from '../../shared/common/cache/cacheable.decorator';
 import { CacheEvict } from '../../shared/common/cache/cache-evict.decorator';
 import {

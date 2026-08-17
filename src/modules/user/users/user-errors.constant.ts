@@ -1,6 +1,6 @@
 import { DomainException } from '../../shared/common/errors/domain.exception';
 import { ErrorCodeDefinition } from '../../shared/common/errors/error-code-definition.interface';
-import { UserErrorCode } from './user-error-code.enum';
+import { UserErrorCode } from '../../shared/common/enums';
 
 export const USER_ERRORS: Record<UserErrorCode, ErrorCodeDefinition> = {
   [UserErrorCode.NOT_FOUND]: {

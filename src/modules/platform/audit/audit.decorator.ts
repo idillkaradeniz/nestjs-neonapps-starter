@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import { AuditAction } from './audit-action.enum';
+import { AuditAction } from '../../shared/common/enums';
 import { AUDIT_METADATA_KEY } from './audit.constants';
 
 export interface AuditOptions {

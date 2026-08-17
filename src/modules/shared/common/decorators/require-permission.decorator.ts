@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import { Permission } from '../../../auth/permission.enum';
+import { Permission } from '../enums';
 
 // Same SetMetadata pattern as @Roles(), but for fine-grained capabilities
 // instead of a whole role. Read by PermissionGuard via Reflector, which

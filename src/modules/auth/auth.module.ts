@@ -48,5 +48,7 @@ import { PermissionGuard } from './guards/permission.guard';
     // whichever guard has metadata for the route enforces it.
     { provide: APP_GUARD, useClass: PermissionGuard },
   ],
+  exports: [JwtModule],
 })
 export class AuthModule {}
+

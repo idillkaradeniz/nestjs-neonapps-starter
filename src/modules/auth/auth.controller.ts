@@ -13,8 +13,8 @@ import { ApiSuccessResponse } from '../shared/common/decorators/api-success-resp
 import { ApiErrorCodes } from '../shared/common/decorators/api-error-codes.decorator';
 import { AuthenticatedUserResponseDto } from './dto/authenticated-user-response.dto';
 import { AuthTokensResponseDto } from './dto/auth-tokens-response.dto';
-import { AuthErrorCode } from './auth-error-code.enum';
-import { UserErrorCode } from '../user/users/user-error-code.enum';
+import { AuthErrorCode } from '../shared/common/enums';
+import { UserErrorCode } from  '../shared/common/enums';
 
 // Controller = HTTP shape only, same rule as UserController. Every
 // route here is @Public() ON PURPOSE — a conscious opt-out of the

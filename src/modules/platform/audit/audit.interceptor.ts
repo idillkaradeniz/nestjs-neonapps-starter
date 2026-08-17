@@ -10,7 +10,7 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { AuthenticatedUser } from '../../auth/interfaces/authenticated-user.interface';
 import { requestContext } from '../../shared/common/context/request-context';
-import { AuditAction } from './audit-action.enum';
+import { AuditAction } from '../../shared/common/enums';
 import { AuditOptions } from './audit.decorator';
 import { AUDIT_METADATA_KEY } from './audit.constants';
 import { AuditService } from './audit.service';
