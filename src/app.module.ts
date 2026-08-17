@@ -25,6 +25,9 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { NotificationsModule } from './modules/platform/notifications/notifications.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { BullModule } from '@nestjs/bullmq';
+import { DocumentsModule } from './modules/documents/documents.module';
+import { TicketsModule } from './modules/tickets/tickets.module';
+import { AiModule } from './modules/shared/ai/ai.module';
 
 // Root module: only wires other modules together — no logic of its own.
 @Module({
@@ -86,15 +89,15 @@ import { BullModule } from '@nestjs/bullmq';
     SchedulerModule,
     AuditModule,
     UploadsModule,
+    DocumentsModule,
     NotificationsModule,
     EventEmitterModule.forRoot(),
     TodosModule,
     TeamModule,
     UsersModule,
-    // Registers JwtAuthGuard globally (APP_GUARD) — must be imported for
-    // that provider to take effect app-wide. Everything is protected by
-    // default from this point on; see @Public() for the opt-out.
     AuthModule,
+    TicketsModule,
+    AiModule,
   ],
   providers: [
     // Registers ThrottlerGuard globally — every route is rate-limited by

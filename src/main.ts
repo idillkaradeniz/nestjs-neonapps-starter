@@ -80,7 +80,27 @@ async function bootstrap(): Promise<void> {
   // "Try it out" call instead of setting the header by hand each time.
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Ironclad Initiative API')
-    .setDescription('API documentation for the Ironclad Initiative backend')
+    .setDescription(
+          `API documentation for the Ironclad Initiative backend
+
+    ## WebSocket API (Day 15)
+
+    **Connection:** \`ws://localhost:3000/documents\` (socket.io namespace \`/documents\`)
+
+    **Auth:** JWT required at handshake. Pass it as \`auth: { token }\` when connecting:
+    \`\`\`js
+    io('http://localhost:3000/documents', { auth: { token: '<accessToken>' } });
+    \`\`\`
+    Missing or invalid token → connection is rejected immediately, before any event is processed.
+
+    **Events (client → server):**
+    - \`join-document\` — payload: \`{ documentId: string }\`. Joins room \`doc:<documentId>\`. Ack response: \`{ event: 'joined', room: string }\`.
+
+    **Events (server → client):**
+    - \`document-updated\` — broadcast to room \`doc:<documentId>\` when that user is updated via \`PATCH /users/:id\`. Payload: the updated \`PublicUserResponseDto\`.
+
+    **Room rule:** only clients that have joined \`doc:<documentId>\` receive that document's updates. Clients outside the room receive nothing.`,
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .build();

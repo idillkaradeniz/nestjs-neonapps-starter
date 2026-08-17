@@ -18,12 +18,11 @@ const baseEnvSchema = z.object({
   REDIS_URL: z.string().min(1, 'REDIS_URL is required'),
   SWAGGER_USER: z.string().min(1, 'SWAGGER_USER is required'),
   SWAGGER_PASSWORD: z.string().min(1, 'SWAGGER_PASSWORD is required'),
-  // Opt-in feature-flag pattern (bonus): the flag itself is always
-  // optional, but enabling it makes its API key required — see the
-  // cross-field rule below.
   FEATURE_X_ENABLED: z.coerce.boolean().default(false),
   FEATURE_X_API_KEY: z.string().optional(),
   SENTRY_DSN: z.string().optional(),
+  AI_PROVIDER: z.enum(['mock', 'gemini']).default('mock'),
+  GEMINI_API_KEY: z.string().optional(),
 });
 
 export const envSchema = baseEnvSchema.superRefine((data, ctx) => {
@@ -32,6 +31,13 @@ export const envSchema = baseEnvSchema.superRefine((data, ctx) => {
       code: 'custom',
       path: ['FEATURE_X_API_KEY'],
       message: 'FEATURE_X_API_KEY is required when FEATURE_X_ENABLED is true',
+    });
+  }
+  if (data.AI_PROVIDER === 'gemini' && !data.GEMINI_API_KEY) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['GEMINI_API_KEY'],
+      message: 'GEMINI_API_KEY is required when AI_PROVIDER is "gemini"',
     });
   }
 });
@@ -49,3 +55,4 @@ export function validateEnv(config: Record<string, unknown>): Env {
   }
   return result.data;
 }
+
