@@ -20,7 +20,7 @@ import { UploadsQueueService } from './uploads-queue.service';
 // checked before the file is even written to disk).
 @Controller('uploads')
 export class UploadsController {
-constructor(private readonly uploadsQueueService: UploadsQueueService) {}
+  constructor(private readonly uploadsQueueService: UploadsQueueService) {}
   @Get(':id/status')
   async getStatus(@Param('id') id: string) {
     const status = await this.uploadsQueueService.getJobStatus(id);
@@ -31,7 +31,7 @@ constructor(private readonly uploadsQueueService: UploadsQueueService) {}
 
     return status;
   }
-   @Post()
+  @Post()
   @HttpCode(202)
   @UseInterceptors(
     FileInterceptor('file', {
@@ -58,15 +58,15 @@ constructor(private readonly uploadsQueueService: UploadsQueueService) {}
     }),
   )
   async upload(@UploadedFile() file: Express.Multer.File) {
-  const jobId = await this.uploadsQueueService.enqueueThumbnailJob({
-    filename: file.filename,
-    path: file.path,
-  });
+    const jobId = await this.uploadsQueueService.enqueueThumbnailJob({
+      filename: file.filename,
+      path: file.path,
+    });
 
-  return {
-    jobId,
-    filename: file.filename,
-    status: 'queued',
-  };
-}
+    return {
+      jobId,
+      filename: file.filename,
+      status: 'queued',
+    };
+  }
 }

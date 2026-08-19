@@ -16,7 +16,8 @@ export const TICKET_ERRORS: Record<TicketErrorCode, ErrorCodeDefinition> = {
   [TicketErrorCode.OPEN_LIMIT_EXCEEDED]: {
     code: TicketErrorCode.OPEN_LIMIT_EXCEEDED,
     status: 400,
-    message: 'You already have {limit} open tickets; close one before creating a new ticket',
+    message:
+      'You already have {limit} open tickets; close one before creating a new ticket',
   },
   [TicketErrorCode.NOT_ASSIGNED_TO_YOU]: {
     code: TicketErrorCode.NOT_ASSIGNED_TO_YOU,
@@ -31,7 +32,13 @@ export const TicketErrors = {
   alreadyClosed: (params: { id: string }) =>
     new DomainException(TICKET_ERRORS[TicketErrorCode.ALREADY_CLOSED], params),
   openLimitExceeded: (params: { limit: number }) =>
-    new DomainException(TICKET_ERRORS[TicketErrorCode.OPEN_LIMIT_EXCEEDED], params),
+    new DomainException(
+      TICKET_ERRORS[TicketErrorCode.OPEN_LIMIT_EXCEEDED],
+      params,
+    ),
   notAssignedToYou: (params: { id: string }) =>
-    new DomainException(TICKET_ERRORS[TicketErrorCode.NOT_ASSIGNED_TO_YOU], params),
+    new DomainException(
+      TICKET_ERRORS[TicketErrorCode.NOT_ASSIGNED_TO_YOU],
+      params,
+    ),
 };

@@ -26,15 +26,15 @@ export class TicketCommentRepository {
   }
 
   async findAllByTicketId(
-  ticketId: string,
-  page: number,
-  limit: number,
-): Promise<TicketCommentRow[]> {
-  return this.db
-    .select()
-    .from(ticketComments)
-    .where(eq(ticketComments.ticketId, ticketId))
-    .limit(limit)
-    .offset((page - 1) * limit);
-}
+    ticketId: string,
+    page: number,
+    limit: number,
+  ): Promise<TicketCommentRow[]> {
+    return this.db
+      .select()
+      .from(ticketComments)
+      .where(eq(ticketComments.ticketId, ticketId))
+      .limit(limit)
+      .offset((page - 1) * limit);
+  }
 }

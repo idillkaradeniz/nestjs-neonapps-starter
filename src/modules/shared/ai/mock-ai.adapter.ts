@@ -5,7 +5,8 @@ import { AiAdapter } from './ai-adapter.interface';
 export class MockAiAdapter implements AiAdapter {
   async summarize(text: string): Promise<string> {
     const trimmed = text.trim();
-    const preview = trimmed.length > 120 ? `${trimmed.slice(0, 120)}...` : trimmed;
+    const preview =
+      trimmed.length > 120 ? `${trimmed.slice(0, 120)}...` : trimmed;
     return `[MOCK SUMMARY] ${preview}`;
   }
 

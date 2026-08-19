@@ -1,18 +1,18 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { TicketRepository } from "./ticket.repository";
-import { TicketCommentRepository } from "./ticket-comment.repository";
-import { CreateTicketDto } from "./dto/create-ticket.dto";
-import { UpdateTicketDto } from "./dto/update-ticket.dto";
-import { AssignTicketDto } from "./dto/assign-ticket.dto";
-import { CreateTicketCommentDto } from "./dto/create-ticket-comment.dto";
-import { TicketErrors } from "./ticket-errors.constant";
+import { Inject, Injectable } from '@nestjs/common';
+import { TicketRepository } from './ticket.repository';
+import { TicketCommentRepository } from './ticket-comment.repository';
+import { CreateTicketDto } from './dto/create-ticket.dto';
+import { UpdateTicketDto } from './dto/update-ticket.dto';
+import { AssignTicketDto } from './dto/assign-ticket.dto';
+import { CreateTicketCommentDto } from './dto/create-ticket-comment.dto';
+import { TicketErrors } from './ticket-errors.constant';
 import { TicketStatus } from '../shared/common/enums';
-import { TicketRow } from "./interfaces/ticket-row.type";
-import { TicketCommentRow } from "./interfaces/ticket-comment-row.type";
-import { TicketsGateway } from "./tickets.gateway";
-import { AI_PROVIDER } from "../shared/ai/ai-provider.token";
-import { AiAdapter } from "../shared/ai/ai-adapter.interface";
-import { AiErrors } from "../shared/ai/ai-errors.constant";
+import { TicketRow } from './interfaces/ticket-row.type';
+import { TicketCommentRow } from './interfaces/ticket-comment-row.type';
+import { TicketsGateway } from './tickets.gateway';
+import { AI_PROVIDER } from '../shared/ai/ai-provider.token';
+import { AiAdapter } from '../shared/ai/ai-adapter.interface';
+import { AiErrors } from '../shared/ai/ai-errors.constant';
 
 const MAX_OPEN_TICKETS_PER_USER = 5;
 
@@ -28,13 +28,15 @@ export class TicketService {
   async create(dto: CreateTicketDto, userId: string): Promise<TicketRow> {
     const openCount = await this.ticketRepository.countOpenByUser(userId);
     if (openCount >= MAX_OPEN_TICKETS_PER_USER) {
-      throw TicketErrors.openLimitExceeded({ limit: MAX_OPEN_TICKETS_PER_USER });
+      throw TicketErrors.openLimitExceeded({
+        limit: MAX_OPEN_TICKETS_PER_USER,
+      });
     }
 
     return await this.ticketRepository.create({
       title: dto.title.trim(),
       description: dto.description.trim(),
-      priority: dto.priority ?? "MEDIUM",
+      priority: dto.priority ?? 'MEDIUM',
       createdBy: userId,
     });
   }
@@ -124,15 +126,33 @@ export class TicketService {
     return comment;
   }
 
-  async listComments(ticketId: string, page: number, limit: number): Promise<TicketCommentRow[]> {
+  async listComments(
+    ticketId: string,
+    page: number,
+    limit: number,
+  ): Promise<TicketCommentRow[]> {
     await this.findOne(ticketId);
-    return this.ticketCommentRepository.findAllByTicketId(ticketId, page, limit);
+    return this.ticketCommentRepository.findAllByTicketId(
+      ticketId,
+      page,
+      limit,
+    );
   }
 
-  async summarize(ticketId: string): Promise<{ summary: string; tags: string[] }> {
+  async summarize(
+    ticketId: string,
+  ): Promise<{ summary: string; tags: string[] }> {
     const ticket = await this.findOne(ticketId);
-    const comments = await this.ticketCommentRepository.findAllByTicketId(ticketId, 1, 1000);
-    const fullText = [ticket.title, ticket.description, ...comments.map((c) => c.body)].join("\n");
+    const comments = await this.ticketCommentRepository.findAllByTicketId(
+      ticketId,
+      1,
+      1000,
+    );
+    const fullText = [
+      ticket.title,
+      ticket.description,
+      ...comments.map((c) => c.body),
+    ].join('\n');
 
     try {
       const [summary, tags] = await Promise.all([
@@ -141,7 +161,7 @@ export class TicketService {
       ]);
       return { summary, tags };
     } catch (error) {
-      console.error("AI provider error:", error);
+      console.error('AI provider error:', error);
       throw AiErrors.providerUnavailable();
     }
   }

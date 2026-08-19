@@ -1,5 +1,5 @@
 import { Permission } from '../shared/common/enums';
-import { UserRole } from  '../shared/common/enums';
+import { UserRole } from '../shared/common/enums';
 
 // The single source of truth for "what can each role do." PermissionGuard
 // looks a user's role up in this map at request time — so promoting what

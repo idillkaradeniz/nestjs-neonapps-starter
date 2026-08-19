@@ -12,7 +12,11 @@ import { CurrentUser } from '../shared/common/decorators/current-user.decorator'
 import { ApiSuccessResponse } from '../shared/common/decorators/api-success-response.decorator';
 import { ApiErrorCodes } from '../shared/common/decorators/api-error-codes.decorator';
 import { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
-import { AuthErrorCode, TicketErrorCode, AiErrorCode } from '../shared/common/enums';
+import {
+  AuthErrorCode,
+  TicketErrorCode,
+  AiErrorCode,
+} from '../shared/common/enums';
 import { TicketService } from './ticket.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
@@ -53,12 +57,16 @@ export class TicketController {
     AuthErrorCode.TOKEN_INVALID,
   )
   async findAll(
-  @Query() pagination: PaginationQueryDto,
-  @Query('createdBy') createdBy?: string,
-  @Query('assignedTo') assignedTo?: string,
-): Promise<TicketRow[]> {
-  return this.ticketService.findAll({ createdBy, assignedTo }, pagination.page, pagination.limit);
-}
+    @Query() pagination: PaginationQueryDto,
+    @Query('createdBy') createdBy?: string,
+    @Query('assignedTo') assignedTo?: string,
+  ): Promise<TicketRow[]> {
+    return this.ticketService.findAll(
+      { createdBy, assignedTo },
+      pagination.page,
+      pagination.limit,
+    );
+  }
 
   @Get(':id')
   @ApiSuccessResponse(TicketResponseDto)
@@ -147,11 +155,15 @@ export class TicketController {
     TicketErrorCode.NOT_FOUND,
   )
   async listComments(
-  @Param('id') id: string,
-  @Query() pagination: PaginationQueryDto,
-): Promise<TicketCommentRow[]> {
-  return this.ticketService.listComments(id, pagination.page, pagination.limit);
-}
+    @Param('id') id: string,
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<TicketCommentRow[]> {
+    return this.ticketService.listComments(
+      id,
+      pagination.page,
+      pagination.limit,
+    );
+  }
 
   @Post(':id/ai-summary')
   @ApiSuccessResponse(TicketAiSummaryResponseDto)

@@ -51,4 +51,3 @@ import { PermissionGuard } from './guards/permission.guard';
   exports: [JwtModule],
 })
 export class AuthModule {}
-

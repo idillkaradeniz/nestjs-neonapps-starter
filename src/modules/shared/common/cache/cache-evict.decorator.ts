@@ -9,7 +9,7 @@ export interface CacheEvictOptions {
    * handler's own response data (for create, where the id doesn't
    * exist until the DB assigns it).
    */
-  keyFn: (req: Request, data: unknown) => string;
+  keyFn: (req: Request, data: unknown) => string; // boundary: validated
   /**
    * Optional: also wipe every cached list for this entity (e.g.
    * "user:list") since a write can change which rows belong in any

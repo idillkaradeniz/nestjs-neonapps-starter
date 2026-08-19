@@ -15,25 +15,26 @@ export class GeminiAdapter implements AiAdapter {
     const google = createGoogleGenerativeAI({
       apiKey: configService.get('GEMINI_API_KEY', { infer: true }),
     });
-this.model = google('gemini-3.5-flash');  }
+    this.model = google('gemini-3.5-flash');
+  }
 
   async summarize(text: string): Promise<string> {
-  this.logger.log('Requesting summary from Gemini');
-  const { object } = await generateObject({
-    model: this.model,
-    schema: z.object({ summary: z.string() }),
-    prompt: `Summarize the following support ticket thread in 2-3 concise sentences:\n\n${text}`,
-  });
-  return object.summary;
-}
+    this.logger.log('Requesting summary from Gemini');
+    const { object } = await generateObject({
+      model: this.model,
+      schema: z.object({ summary: z.string() }),
+      prompt: `Summarize the following support ticket thread in 2-3 concise sentences:\n\n${text}`,
+    });
+    return object.summary;
+  }
 
   async generateTags(text: string): Promise<string[]> {
-  this.logger.log('Requesting tags from Gemini');
-  const { object } = await generateObject({
-    model: this.model,
-    schema: z.object({ tags: z.array(z.string()).max(5) }),
-    prompt: `Generate up to 5 short category tags for the following support ticket thread:\n\n${text}`,
-  });
-  return object.tags;
-}
+    this.logger.log('Requesting tags from Gemini');
+    const { object } = await generateObject({
+      model: this.model,
+      schema: z.object({ tags: z.array(z.string()).max(5) }),
+      prompt: `Generate up to 5 short category tags for the following support ticket thread:\n\n${text}`,
+    });
+    return object.tags;
+  }
 }

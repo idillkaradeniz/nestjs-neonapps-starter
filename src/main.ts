@@ -81,7 +81,7 @@ async function bootstrap(): Promise<void> {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Ironclad Initiative API')
     .setDescription(
-          `API documentation for the Ironclad Initiative backend
+      `API documentation for the Ironclad Initiative backend
 
     ## WebSocket API (Day 15)
 
