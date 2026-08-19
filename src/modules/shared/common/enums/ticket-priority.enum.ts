@@ -1,6 +1,8 @@
 export const TicketPriority = {
   LOW: 'LOW',
   MEDIUM: 'MEDIUM',
-  HIGH: 'HIGH',} as const;
+  HIGH: 'HIGH',
+} as const;
 
-export type TicketPriority = (typeof TicketPriority)[keyof typeof TicketPriority];
+export type TicketPriority =
+  (typeof TicketPriority)[keyof typeof TicketPriority];

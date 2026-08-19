@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserRole } from  '../../shared/common/enums';
+import { UserRole } from '../../shared/common/enums';
 
 // Swagger-only mirror of AuthenticatedUser — that's an interface (no
 // decorators possible), this is the class Swagger needs to document

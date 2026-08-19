@@ -14,7 +14,7 @@ import { ApiErrorCodes } from '../shared/common/decorators/api-error-codes.decor
 import { AuthenticatedUserResponseDto } from './dto/authenticated-user-response.dto';
 import { AuthTokensResponseDto } from './dto/auth-tokens-response.dto';
 import { AuthErrorCode } from '../shared/common/enums';
-import { UserErrorCode } from  '../shared/common/enums';
+import { UserErrorCode } from '../shared/common/enums';
 
 // Controller = HTTP shape only, same rule as UserController. Every
 // route here is @Public() ON PURPOSE — a conscious opt-out of the

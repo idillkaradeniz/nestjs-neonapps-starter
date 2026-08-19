@@ -8,7 +8,7 @@ export class UploadsQueueService {
     @InjectQueue('thumbnails') private readonly thumbnailsQueue: Queue,
   ) {}
 
-    async enqueueThumbnailJob(params: { filename: string; path: string }) {
+  async enqueueThumbnailJob(params: { filename: string; path: string }) {
     const job = await this.thumbnailsQueue.add('generate-thumbnail', params, {
       attempts: 3,
       backoff: {
@@ -17,8 +17,8 @@ export class UploadsQueueService {
       },
     });
     return job.id;
-    }
-    async getJobStatus(jobId: string) {
+  }
+  async getJobStatus(jobId: string) {
     const job = await this.thumbnailsQueue.getJob(jobId);
 
     if (!job) {

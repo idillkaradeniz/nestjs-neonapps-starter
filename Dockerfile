@@ -27,7 +27,7 @@ EXPOSE 3000
 
 #BONUS
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-RUN mkdir -p /app/uploads && chown -R appuser:appgroup /app
+
 USER appuser
 
 CMD ["node", "dist/src/main.js"]

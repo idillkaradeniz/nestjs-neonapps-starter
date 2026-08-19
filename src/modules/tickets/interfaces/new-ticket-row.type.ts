@@ -1,8 +1,8 @@
-import { TicketPriority } from "../../shared/common/enums";
+import { TicketPriority } from '../../shared/common/enums';
 
 export type NewTicketRow = {
   title: string;
   description: string;
-  priority: TicketPriority
+  priority: TicketPriority;
   createdBy: string;
 };

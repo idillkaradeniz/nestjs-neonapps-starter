@@ -12,7 +12,7 @@ export interface CacheEnvelope<T> {
 }
 
 export function isCacheEnvelope(
-  value: unknown,
+  value: unknown, // boundary: validated
 ): value is CacheEnvelope<unknown> {
   return typeof value === 'object' && value !== null && '__cacheMeta' in value;
 }

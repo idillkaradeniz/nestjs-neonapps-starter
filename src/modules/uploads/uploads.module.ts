@@ -5,9 +5,7 @@ import { UploadsQueueService } from './uploads-queue.service';
 import { ThumbnailsProcessor } from './thumbnails.processor';
 
 @Module({
-  imports: [
-    BullModule.registerQueue({ name: 'thumbnails' }),
-  ],
+  imports: [BullModule.registerQueue({ name: 'thumbnails' })],
   controllers: [UploadsController],
   providers: [UploadsQueueService, ThumbnailsProcessor],
 })

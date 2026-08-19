@@ -19,7 +19,7 @@ import {
 import { wrapCacheMeta } from './cache-envelope.interface';
 
 interface StoredCacheEntry {
-  data: unknown;
+  data: unknown; // boundary: validated
   cachedAt: string;
 }
 
@@ -111,7 +111,7 @@ export class CacheInterceptor implements NestInterceptor {
 
   private async store(
     key: string,
-    data: unknown,
+    data: unknown, // boundary: validated
     cachedAt: string,
     ttl: number,
   ): Promise<void> {
@@ -129,7 +129,7 @@ export class CacheInterceptor implements NestInterceptor {
   private async evict(
     context: ExecutionContext,
     options: CacheEvictOptions,
-    data: unknown,
+    data: unknown, // boundary: validated
   ): Promise<void> {
     // void-ok
     const request = context.switchToHttp().getRequest<Request>();

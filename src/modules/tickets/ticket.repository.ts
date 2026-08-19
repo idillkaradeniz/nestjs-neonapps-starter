@@ -26,30 +26,43 @@ export class TicketRepository {
     const [ticket] = await this.db
       .select()
       .from(tickets)
-      .where(eq(tickets.id, id)).limit(1)
+      .where(eq(tickets.id, id))
+      .limit(1);
     return ticket;
   }
 
   async findAll(
-  filters: { createdBy?: string; assignedTo?: string },
-  page: number,
-  limit: number,
-): Promise<TicketRow[]> {
-  const conditions = [];
-  if (filters.createdBy) conditions.push(eq(tickets.createdBy, filters.createdBy));
-  if (filters.assignedTo) conditions.push(eq(tickets.assignedTo, filters.assignedTo));
+    filters: { createdBy?: string; assignedTo?: string },
+    page: number,
+    limit: number,
+  ): Promise<TicketRow[]> {
+    const conditions = [];
+    if (filters.createdBy)
+      conditions.push(eq(tickets.createdBy, filters.createdBy));
+    if (filters.assignedTo)
+      conditions.push(eq(tickets.assignedTo, filters.assignedTo));
 
-  return this.db
-    .select()
-    .from(tickets)
-    .where(conditions.length ? and(...conditions) : undefined)
-    .limit(limit)
-    .offset((page - 1) * limit);
-}
+    return this.db
+      .select()
+      .from(tickets)
+      .where(conditions.length ? and(...conditions) : undefined)
+      .limit(limit)
+      .offset((page - 1) * limit);
+  }
 
   async update(
     id: string,
-    changes: Partial<Pick<TicketRow, 'title' | 'description' | 'priority' | 'status' | 'assignedTo' | 'closedAt'>>,
+    changes: Partial<
+      Pick<
+        TicketRow,
+        | 'title'
+        | 'description'
+        | 'priority'
+        | 'status'
+        | 'assignedTo'
+        | 'closedAt'
+      >
+    >,
   ): Promise<TicketRow | undefined> {
     const [ticket] = await this.db
       .update(tickets)

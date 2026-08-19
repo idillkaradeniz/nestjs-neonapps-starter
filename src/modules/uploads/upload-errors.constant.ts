@@ -21,11 +21,14 @@ export const UPLOAD_ERRORS: Record<UploadErrorCode, ErrorCodeDefinition> = {
 };
 
 export const UploadErrors = {
-  fileTooLarge: (params: {maxSizeMb: number}) =>
+  fileTooLarge: (params: { maxSizeMb: number }) =>
     new DomainException(UPLOAD_ERRORS[UploadErrorCode.FILE_TOO_LARGE], params),
   unsupportedType: (params: { mimetype: string }) =>
-  new DomainException(UPLOAD_ERRORS[UploadErrorCode.UNSUPPORTED_TYPE], params),
-  notFound: (params: {id: string}) =>
+    new DomainException(
+      UPLOAD_ERRORS[UploadErrorCode.UNSUPPORTED_TYPE],
+      params,
+    ),
+  notFound: (params: { id: string }) =>
     new DomainException(UPLOAD_ERRORS[UploadErrorCode.NOT_FOUND], params),
 };
 

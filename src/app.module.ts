@@ -75,13 +75,13 @@ import { AiModule } from './modules/shared/ai/ai.module';
     }),
 
     BullModule.forRootAsync({
-  inject: [ConfigService],
-  useFactory: (configService: ConfigService<Env, true>) => ({
-    connection: {
-      url: configService.get('REDIS_URL', { infer: true }),
-    },
-  }),
-}),
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService<Env, true>) => ({
+        connection: {
+          url: configService.get('REDIS_URL', { infer: true }),
+        },
+      }),
+    }),
     DatabaseModule,
     RedisModule,
     ScheduleModule.forRoot(),

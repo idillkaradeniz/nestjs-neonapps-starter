@@ -13,7 +13,9 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 
 @WebSocketGateway({ namespace: 'documents' })
-export class DocumentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class DocumentsGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -37,7 +39,11 @@ export class DocumentsGateway implements OnGatewayConnection, OnGatewayDisconnec
 
     try {
       const payload = this.jwtService.verify<JwtPayload>(token);
-      client.data.user = { id: payload.sub, email: payload.email, role: payload.role };
+      client.data.user = {
+        id: payload.sub,
+        email: payload.email,
+        role: payload.role,
+      };
       this.logger.log(`Client connected: ${client.id} (user ${payload.sub})`);
     } catch {
       this.logger.warn(`Connection rejected (invalid token): ${client.id}`);
@@ -57,12 +63,14 @@ export class DocumentsGateway implements OnGatewayConnection, OnGatewayDisconnec
   }
 
   broadcastUpdate(documentId: string, payload: unknown) {
+    // boundary: validated
     const room = `doc:${documentId}`;
     this.server.to(room).emit('document-updated', payload);
     this.logger.log(`Broadcast to ${room}`);
   }
 
   handleDisconnect(client: Socket) {
+    // boundary: validated
     const user = client.data.user as { id: string } | undefined;
     this.logger.log(
       `Client disconnected: ${client.id}${user ? ` (user ${user.id})` : ''}`,

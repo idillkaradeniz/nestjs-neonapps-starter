@@ -6,7 +6,7 @@ the real one. This README is a **map, not a solution**: the shape to build and t
 gaps to notice. No code here on purpose.
 
 > 🕳️ **Discovery-gap rules apply.** The warnings below are questions, not answers.
-> When something feels missing, it is. Find out *why* before you write the line.
+> When something feels missing, it is. Find out _why_ before you write the line.
 
 ## The shape you'll assemble (Day 13)
 
@@ -21,24 +21,24 @@ gaps to notice. No code here on purpose.
 ## Model before you code (design-first)
 
 Before a single `pgTable(...)`, model the data: entities, relationships, cardinality,
-normalization (1NF–3NF — and when to *deliberately* denormalize). Draw the ERD in a
-modeling tool (see the Toolbox) and keep it in your notes. The schema is the *output*
+normalization (1NF–3NF — and when to _deliberately_ denormalize). Draw the ERD in a
+modeling tool (see the Toolbox) and keep it in your notes. The schema is the _output_
 of a design, not the design itself.
 
 ## Gaps to notice (don't skip — each one bites in production)
 
 - **Numbers that aren't numbers.** A `numeric`/`decimal` column comes back from the
-  driver as *what* JavaScript type? Sort a list by a score column and watch. Where do
+  driver as _what_ JavaScript type? Sort a list by a score column and watch. Where do
   you convert it — and why the repository boundary?
 - **Primary keys.** `uuid` (defaultRandom) vs an auto-increment identity `integer` —
   what does each cost you (guessability, ordering, size, merging across environments)?
 - **Time.** A timestamp column without `withTimezone` / `mode` — what breaks when the
   server and the client disagree about "now"? How does `updatedAt` update itself?
 - **Enums.** A role column as `pgEnum` vs `text` — adding a value is easy; try
-  *removing* or reordering one later. Which cost do you want to sign up for?
+  _removing_ or reordering one later. Which cost do you want to sign up for?
 - **The driver question (we run Cloud SQL / RDS in prod, not Neon).** Your app is a
   long-running server → which Postgres driver is correct? Day 13 has you call
-  `db.transaction()` — does *every* driver support interactive transactions? (One
+  `db.transaction()` — does _every_ driver support interactive transactions? (One
   popular serverless HTTP driver silently does not.) One `pg` driver speaks to both a
   dev Neon branch and prod Cloud SQL/RDS — why?
 - **Connections aren't free.** Cloud SQL/RDS have a `max_connections` ceiling. Put your

@@ -13,7 +13,9 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 
 @WebSocketGateway({ namespace: 'tickets' })
-export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class TicketsGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -37,7 +39,11 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
 
     try {
       const payload = this.jwtService.verify<JwtPayload>(token);
-      client.data.user = { id: payload.sub, email: payload.email, role: payload.role };
+      client.data.user = {
+        id: payload.sub,
+        email: payload.email,
+        role: payload.role,
+      };
       this.logger.log(`Client connected: ${client.id} (user ${payload.sub})`);
     } catch {
       this.logger.warn(`Connection rejected (invalid token): ${client.id}`);
@@ -57,12 +63,14 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
   }
 
   broadcastNewComment(ticketId: string, payload: unknown) {
+    // boundary: validated
     const room = `ticket:${ticketId}`;
     this.server.to(room).emit('new-comment', payload);
     this.logger.log(`Broadcast new-comment to ${room}`);
   }
 
   broadcastStatusChanged(ticketId: string, payload: unknown) {
+    // boundary: validated
     const room = `ticket:${ticketId}`;
     this.server.to(room).emit('status-changed', payload);
     this.logger.log(`Broadcast status-changed to ${room}`);

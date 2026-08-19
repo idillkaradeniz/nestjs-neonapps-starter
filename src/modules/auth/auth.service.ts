@@ -18,7 +18,7 @@ import { AuthTokens } from './interfaces/auth-tokens.interface';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { RefreshTokenPayload } from './interfaces/refresh-token-payload.interface';
 import { RefreshTokenRepository } from './refresh-token.repository';
-import { UserRole } from  '../shared/common/enums';
+import { UserRole } from '../shared/common/enums';
 
 @Injectable()
 export class AuthService {
