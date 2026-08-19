@@ -29,6 +29,6 @@
     "noUnusedParameters": true,
     "noUncheckedIndexedAccess": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["node"],
+    "types": ["node", "jest"],
   },
 }
